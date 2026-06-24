@@ -1,0 +1,818 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "instrument_source": "Pulse_Instrument_v3.md (v3, 2026-06-24)",
+    "generated": "2026-06-24",
+    "description": "Single source of truth for the Starea Digitalizarii survey. Consumed by the runner UI (show/hide), the submission validator (required/skipped), and the analysis layer (question_id + option keys). Display labels may change; keys must not.",
+    "register": "dumneavoastra",
+    "wave": {
+      "current": "y1",
+      "rule": "Assign wave from started_at: 'y1' if started_at < cutoff, else 'always_on'.",
+      "cutoff": "2026-08-31T23:59:59+03:00"
+    },
+    "channel": {
+      "param": "src",
+      "session_key": "survey_channel",
+      "default": "web",
+      "note": "Read server-side from ?src= on first landing hit, validated against enum, written to server session. On submit, channel is read FROM SESSION, never from the request body. Unknown value -> 'other'. No session value -> 'web'.",
+      "enum": ["web", "email_client", "inapp", "gads", "fb", "other"],
+      "rollup": {
+        "note": "Instrument v3's 3-way customer/cold/organic cut is DERIVED in analysis, not stored. This map is the canonical derivation; not a second source of truth.",
+        "customer": ["email_client", "inapp"],
+        "cold": ["gads", "fb"],
+        "organic": ["web", "other"]
+      }
+    },
+    "free_text_max_length": 300,
+    "moderation_note": "Free-text answers (moderated:true) require a moderation state before any public surfacing. Schema home is a side table keyed to survey_answers.id (see CATALOGUE.md), NOT a column on survey_answers (additive-only / write-once raw layer).",
+    "audit_tag_note": "Questions tagged with an 'audit' dimension are cross-referenceable to the Auditul de Maturitate Digitala. 'survey-native' questions have no audit equivalent."
+  },
+
+  "scales": {
+    "effort": {
+      "label": "Efort/timp consumat",
+      "points": [
+        {"key": "minim", "label": "Minim"},
+        {"key": "putin", "label": "Putin"},
+        {"key": "moderat", "label": "Moderat"},
+        {"key": "mult", "label": "Mult"},
+        {"key": "enorm", "label": "Enorm"}
+      ]
+    },
+    "efficiency": {
+      "label": "Crestere a eficientei",
+      "points": [
+        {"key": "deloc", "label": "Deloc"},
+        {"key": "putin", "label": "Putin"},
+        {"key": "moderat", "label": "Moderat"},
+        {"key": "semnificativ", "label": "Semnificativ"},
+        {"key": "transformat", "label": "Complet transformat"}
+      ]
+    },
+    "usefulness": {
+      "label": "Utilitate",
+      "points": [
+        {"key": "deloc_util", "label": "Deloc util"},
+        {"key": "putin_util", "label": "Putin util"},
+        {"key": "neutru", "label": "Neutru"},
+        {"key": "util", "label": "Util"},
+        {"key": "esential", "label": "Esential"}
+      ]
+    },
+    "hindrance": {
+      "label": "Cat de mult impiedica",
+      "points": [
+        {"key": "deloc", "label": "Deloc"},
+        {"key": "putin", "label": "Putin"},
+        {"key": "moderat", "label": "Moderat"},
+        {"key": "mult", "label": "Mult"},
+        {"key": "foarte_mult", "label": "Foarte mult"}
+      ]
+    },
+    "agreement": {
+      "label": "Acord",
+      "points": [
+        {"key": "dezacord_total", "label": "Dezacord total"},
+        {"key": "dezacord", "label": "Dezacord"},
+        {"key": "neutru", "label": "Neutru"},
+        {"key": "acord", "label": "Acord"},
+        {"key": "acord_total", "label": "Acord total"}
+      ]
+    },
+    "timeband": {
+      "label": "Timp dedicat saptamanal",
+      "points": [
+        {"key": "lt1h", "label": "Sub 1 ora"},
+        {"key": "1_3h", "label": "1-3 ore"},
+        {"key": "3_6h", "label": "3-6 ore"},
+        {"key": "6_10h", "label": "6-10 ore"},
+        {"key": "gt10h", "label": "Peste 10 ore"}
+      ]
+    }
+  },
+
+  "option_sets": {
+    "school_type": [
+      {"key": "gradinita", "label": "Gradinita"},
+      {"key": "scoala_generala", "label": "Scoala generala (clasele 0-8)"},
+      {"key": "liceu_teoretic", "label": "Liceu teoretic"},
+      {"key": "liceu_tehnologic", "label": "Liceu tehnologic sau vocational"},
+      {"key": "colegiu_national", "label": "Colegiu national"},
+      {"key": "scoala_profesionala", "label": "Scoala profesionala / duala"},
+      {"key": "structura_combinata", "label": "Structura combinata (gradinita + scoala, sau gimnaziu + liceu)"},
+      {"key": "ces", "label": "Scoala pentru elevi cu cerinte educationale speciale (CES)"},
+      {"key": "alta", "label": "Alta unitate de invatamant"}
+    ],
+    "school_size": [
+      {"key": "lt100", "label": "Sub 100 de elevi"},
+      {"key": "100_300", "label": "100-300 de elevi"},
+      {"key": "300_700", "label": "300-700 de elevi"},
+      {"key": "700_1500", "label": "700-1.500 de elevi"},
+      {"key": "gt1500", "label": "Peste 1.500 de elevi"}
+    ],
+    "locality": [
+      {"key": "rural", "label": "Mediu rural (comuna sau sat)"},
+      {"key": "oras_mic", "label": "Oras mic (sub 20.000 de locuitori)"},
+      {"key": "oras_mediu", "label": "Oras mediu (20.000-100.000 de locuitori)"},
+      {"key": "municipiu", "label": "Municipiu (100.000-300.000 de locuitori)"},
+      {"key": "municipiu_mare", "label": "Municipiu mare (peste 300.000 de locuitori)"}
+    ]
+  },
+
+  "q0": {
+    "id": "Q0",
+    "type": "single_select",
+    "text": "Care este rolul dumneavoastra principal in sistemul de educatie?",
+    "help": "Daca ocupati mai multe roluri (de exemplu, director si profesor in acelasi timp), va rugam sa raspundeti din perspectiva rolului caruia ii dedicati cel mai mult timp in activitatea zilnica.",
+    "options": [
+      {"key": "director", "label": "Director / Director adjunct", "path": "director"},
+      {"key": "profesor", "label": "Profesor", "path": "teacher"},
+      {"key": "secretariat", "label": "Secretar / Administrator / Personal auxiliar", "path": "secretariat"},
+      {"key": "parinte", "label": "Parinte", "path": "parent"},
+      {"key": "inspector", "label": "Inspector ISJ / Reprezentant autoritate educationala", "path": "inspector"}
+    ]
+  },
+
+  "branch_rules": [
+    {"path": "director", "trigger": {"question": "AD0", "only": "none"}, "skip": ["A4", "A5", "A8"]},
+    {"path": "teacher", "trigger": {"question": "BD0", "only": "none"}, "skip": ["B2", "B3"]},
+    {"path": "secretariat", "trigger": {"question": "CD0", "only": "none"}, "skip": ["C4", "C5"]},
+    {"path": "parent", "trigger": {"question": "D4", "equals": "school_none"}, "skip": ["D5", "D5b", "D6"]}
+  ],
+
+  "paths": {
+    "director": {
+      "label": "Directori",
+      "sections": [
+        {
+          "title": "Firmographics",
+          "questions": [
+            {"id": "AF1", "type": "single_select", "text": "Ce tip de unitate scolara conduceti?", "options_ref": "school_type"},
+            {"id": "AF2", "type": "single_select", "text": "Cati elevi are unitatea pe care o conduceti?", "options_ref": "school_size"},
+            {"id": "AF3", "type": "single_select", "text": "In ce tip de localitate se afla unitatea dumneavoastra?", "options_ref": "locality"},
+            {"id": "AF4", "type": "single_select", "text": "Unitatea dumneavoastra este:", "options": [
+              {"key": "publica", "label": "Publica"},
+              {"key": "privata", "label": "Privata autorizata / acreditata"}
+            ]},
+            {"id": "AF5", "type": "single_select", "text": "De cati ani ocupati o functie de conducere in invatamant?", "options": [
+              {"key": "lt2y", "label": "Sub 2 ani"},
+              {"key": "2_5y", "label": "2-5 ani"},
+              {"key": "5_10y", "label": "5-10 ani"},
+              {"key": "gt10y", "label": "Peste 10 ani"}
+            ]}
+          ]
+        },
+        {
+          "title": "Profil de digitalizare",
+          "questions": [
+            {"id": "AD0", "type": "multi_select", "segmentation": true, "exclusive_option": "none", "text": "Ce instrumente digitale folositi actualmente in unitatea dumneavoastra?", "help": "Selectati toate variantele care se aplica. Raspunsurile vor directiona intrebarile urmatoare.", "options": [
+              {"key": "catalog", "label": "Catalog electronic si condica digitala"},
+              {"key": "parent_app", "label": "Aplicatie mobila sau portal pentru comunicarea cu parintii"},
+              {"key": "doc_gen", "label": "Generare automata de documente administrative (adeverinte, diplome, certificate)"},
+              {"key": "compliance", "label": "Module de conformitate sau proceduri (SCIM, CEAC, Achizitii Publice)"},
+              {"key": "content", "label": "Platforma de continut educational digital (resurse interactive, biblioteca digitala)"},
+              {"key": "testing", "label": "Testare si evaluare online"},
+              {"key": "dashboards", "label": "Dashboard-uri de conducere sau raportare automata (SIIIR, ISJ)"},
+              {"key": "none", "label": "Nu folosim platforme digitale de management"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea I: Sarcina Zilnica",
+          "questions": [
+            {"id": "A_hook", "type": "single_select", "tag": "survey-native", "text": "La finalul zilei de lucru, care este principalul lucru care va impiedica sa plecati la timp acasa?", "options": [
+              {"key": "rapoarte", "label": "Rapoarte si situatii care trebuie trimise urgent catre ISJ, ANAP sau alte institutii"},
+              {"key": "documente", "label": "Verificarea si semnarea documentelor administrative ale secretariatului"},
+              {"key": "conversatii", "label": "Conversatii cu profesori, elevi sau parinti care necesita atentie"},
+              {"key": "inspectie", "label": "Pregatirea pentru o inspectie sau audit care se apropie"},
+              {"key": "operational", "label": "Gestionarea problemelor operationale si tehnice ale unitatii"},
+              {"key": "altceva", "label": "Altceva"}
+            ]},
+            {"id": "A1", "type": "single_select", "tag": "survey-native", "text": "La finalul unei saptamani de lucru, cat din timpul dumneavoastra a fost consumat de sarcini administrative in loc de conducere si pedagogie?", "options": [
+              {"key": "lt20", "label": "Sub 20% (administrativul ramane in plan secundar)"},
+              {"key": "20_40", "label": "20-40% (un echilibru relativ rezonabil)"},
+              {"key": "40_60", "label": "40-60% (administrativul domina prea mult)"},
+              {"key": "gt60", "label": "Peste 60% (rareori am timp pentru ce conteaza cu adevarat)"}
+            ]},
+            {"id": "A2", "type": "single_select", "tag": "survey-native", "text": "Cat timp estimati ca dedica secretariatul si echipa de management saptamanal raportarilor manuale si centralizarii datelor?", "options": [
+              {"key": "lt5h", "label": "Sub 5 ore"},
+              {"key": "5_15h", "label": "5-15 ore"},
+              {"key": "15_30h", "label": "15-30 ore"},
+              {"key": "gt30h", "label": "Peste 30 de ore (echivalentul unui post full-time)"}
+            ]},
+            {"id": "A3", "type": "likert_grid", "scale": "effort", "tag": "survey-native", "text": "Cat timp si efort va consuma fiecare dintre urmatoarele aspecte ale activitatii administrative?", "rows": [
+              {"key": "siiir", "label": "Centralizarea manuala a datelor pentru raportarile SIIIR"},
+              {"key": "ceac", "label": "Pregatirea documentatiei pentru inspectii CEAC sau Curtea de Conturi"},
+              {"key": "circuit_fizic", "label": "Gestionarea circuitului fizic al documentelor si dosarelor"},
+              {"key": "achizitii", "label": "Coordonarea achizitiilor publice si raportarea ANAP"},
+              {"key": "abandon", "label": "Monitorizarea absentelor si riscului de abandon scolar"},
+              {"key": "parinti_neoficial", "label": "Comunicarea cu parintii pe canale neoficiale (telefon, WhatsApp)"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea II: Fundatie si Infrastructura",
+          "questions": [
+            {"id": "A_inf1", "type": "single_select", "ladder": true, "audit": "1.1", "text": "Cum ati descrie dotarea cu dispozitive (calculatoare, tablete) pentru personalul didactic?", "options": [
+              {"key": "niciun", "label": "Nu exista dispozitive dedicate cadrelor didactice"},
+              {"key": "partajate", "label": "Cateva dispozitive partajate, disponibile la cerere"},
+              {"key": "majoritate", "label": "Majoritatea cadrelor didactice au acces regulat la un dispozitiv"},
+              {"key": "fiecare", "label": "Fiecare cadru didactic are propriul dispozitiv functional"}
+            ]},
+            {"id": "A_inf2", "type": "single_select", "ladder": true, "audit": "1.3", "text": "Cum functioneaza conexiunea la internet in unitate?", "options": [
+              {"key": "niciun", "label": "Nu exista conexiune sau este foarte instabila"},
+              {"key": "partial", "label": "Exista, dar acopera doar cateva spatii (secretariat, directiune)"},
+              {"key": "majoritate", "label": "Disponibila in majoritatea spatiilor, cu viteze variabile"},
+              {"key": "completa", "label": "Stabila si rapida in toata unitatea, inclusiv in salile de clasa"}
+            ]},
+            {"id": "A_inf3", "type": "single_select", "ladder": true, "audit": "1.4", "text": "Cum este asigurat suportul tehnic in unitate?", "options": [
+              {"key": "niciun", "label": "Nu exista o persoana sau un serviciu responsabil"},
+              {"key": "informal", "label": "Apelam informal la cineva din personal cand apare o problema"},
+              {"key": "extern", "label": "Avem contract cu un furnizor extern de servicii IT"},
+              {"key": "intern", "label": "Avem o persoana dedicata intern, eventual si contract extern"}
+            ]},
+            {"id": "A_inf4", "type": "single_select", "tag": "survey-native", "text": "Care a fost principala sursa de finantare pentru dotarile digitale ale unitatii in ultimii 2 ani?", "options": [
+              {"key": "pnrr", "label": "PNRR sau fonduri europene"},
+              {"key": "buget_local", "label": "Buget local (primarie sau consiliu judetean)"},
+              {"key": "proprii", "label": "Resurse proprii sau sponsorizari"},
+              {"key": "none", "label": "Nu am beneficiat de finantari semnificative in aceasta perioada"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea III: Adoptare si Eficienta",
+          "questions": [
+            {"id": "A4", "type": "single_select", "ladder": true, "audit": "2.2/2.6", "show_if": {"question": "AD0", "not_only": "none"}, "text": "Cum ati descrie stadiul actual de digitalizare al unitatii dumneavoastra?", "options": [
+              {"key": "completa", "label": "Digitalizare completa: nu mai folosim registre sau dosare fizice"},
+              {"key": "hibrid", "label": "Hibrid: folosim platforme digitale, dar mentinem si formatul fizic in paralel"},
+              {"key": "incipient", "label": "Incipient: avem dotari hardware, dar fluxurile digitale sunt partiale"},
+              {"key": "doar_obligatoriu", "label": "Doar raportarea obligatorie (SIIIR): restul ramane pe hartie"}
+            ]},
+            {"id": "A5", "type": "likert_grid", "scale": "efficiency", "tag": "survey-native", "show_if": {"question": "AD0", "not_only": "none"}, "text": "Fata de situatia de dinaintea platformei actuale, indiferent daca era pe hartie sau cu un alt sistem digital, cat de mult a crescut eficienta in fiecare dintre urmatoarele aspecte?", "rows": [
+              {"key": "secretariat", "label": "Volumul de munca administrativa al secretariatului"},
+              {"key": "transparenta", "label": "Transparenta informatiilor pentru parinti"},
+              {"key": "inspectii", "label": "Pregatirea pentru inspectii si audituri"},
+              {"key": "comunicare_interna", "label": "Comunicarea interna in echipa scolii"},
+              {"key": "abandon", "label": "Monitorizarea situatiei elevilor cu risc de abandon"},
+              {"key": "raportare", "label": "Raportarea automata catre ISJ sau ANAP"}
+            ]},
+            {"id": "A6", "type": "single_select", "tag": "survey-native", "text": "Care este cel mai mare obstacol in calea adoptarii depline a instrumentelor digitale de catre personalul din unitatea dumneavoastra?", "options": [
+              {"key": "dubla_munca", "label": "Teama de dubla munca (si pe hartie, si digital)"},
+              {"key": "competente", "label": "Lipsa competentelor digitale de baza ale personalului"},
+              {"key": "hardware", "label": "Echipamentele hardware insuficiente sau invechite"},
+              {"key": "rezistenta", "label": "Rezistenta fata de schimbarea rutinelor de lucru"},
+              {"key": "timp_training", "label": "Lipsa timpului pentru training si onboarding"},
+              {"key": "suport", "label": "Calitatea slaba a suportului tehnic din partea furnizorului"},
+              {"key": "none", "label": "Nu exista obstacole semnificative in unitatea noastra"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea IV: Conducere si Date",
+          "questions": [
+            {"id": "A_lead1", "type": "single_select", "ladder": true, "audit": "3.3", "text": "Exista un plan de digitalizare pentru unitatea dumneavoastra?", "options": [
+              {"key": "reactiv", "label": "Nu, digitalizarea a avansat reactiv, fara un plan documentat"},
+              {"key": "intentii", "label": "Exista intentii si discutii, dar nimic formalizat"},
+              {"key": "informal", "label": "Exista un plan informal, cunoscut de conducere dar nedocumentat"},
+              {"key": "scris", "label": "Exista un plan scris, cu obiective, responsabili si termene clare"}
+            ]},
+            {"id": "A_data1", "type": "single_select", "ladder": true, "audit": "3.4", "text": "Datele din platforma (note, absente, frecventa) sunt folosite activ pentru decizii in unitate?", "options": [
+              {"key": "nu", "label": "Nu, datele se colecteaza pentru raportari externe, nu pentru uz intern"},
+              {"key": "uneori", "label": "Uneori, fara un proces clar"},
+              {"key": "periodic", "label": "Da, conducerea revizuieste periodic datele si ia decizii pe baza lor"},
+              {"key": "structurat", "label": "Da, exista un proces structurat de analiza, cu dashboard-uri si intalniri regulate"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea V: Comportament fata de Furnizori",
+          "questions": [
+            {"id": "A7", "type": "ranking", "tag": "survey-native", "text": "Ordonati urmatoarele criterii dupa importanta lor atunci cand evaluati sau alegeti o platforma de management scolar. Trageti de la cel mai important (1) la cel mai putin important.", "options": [
+              {"key": "usurinta", "label": "Usurinta de utilizare pentru profesori si secretariat"},
+              {"key": "acoperire", "label": "Acoperirea completa a nevoilor (catalog + administratie + conformitate intr-un singur sistem)"},
+              {"key": "conformitate", "label": "Conformitatea juridica si omologarea oficiala (GDPR, Minister)"},
+              {"key": "suport", "label": "Calitatea suportului tehnic si a trainingului oferit"},
+              {"key": "integrare", "label": "Integrarea cu sistemele de raportare existente (SIIIR, ANAP)"},
+              {"key": "reputatie", "label": "Reputatia furnizorului si referintele de la alte scoli"},
+              {"key": "pret", "label": "Pretul si costul total de utilizare"}
+            ]},
+            {"id": "A8", "type": "single_select", "tag": "survey-native", "show_if": {"question": "AD0", "not_only": "none"}, "text": "Cat de satisfacut sunteti in ansamblu de platforma digitala pe care o utilizati in prezent?", "options": [
+              {"key": "foarte_satisfacut", "label": "Foarte satisfacut"},
+              {"key": "satisfacut", "label": "Satisfacut"},
+              {"key": "neutru", "label": "Neutru"},
+              {"key": "nesatisfacut", "label": "Nesatisfacut"},
+              {"key": "foarte_nesatisfacut", "label": "Foarte nesatisfacut"}
+            ]},
+            {"id": "A8b", "type": "single_select", "tag": "survey-native", "text": "De cat timp folositi instrumente digitale de management scolar in unitatea dumneavoastra?", "options": [
+              {"key": "lt1y", "label": "Sub 1 an"},
+              {"key": "1_3y", "label": "1-3 ani"},
+              {"key": "3_6y", "label": "3-6 ani"},
+              {"key": "gt6y", "label": "Peste 6 ani"}
+            ]},
+            {"id": "A8c", "type": "single_select", "tag": "survey-native", "text": "De cate ori ati schimbat furnizorul principal de platforma digitala?", "options": [
+              {"key": "niciodata", "label": "Niciodata (am ramas cu primul furnizor)"},
+              {"key": "o_data", "label": "O data"},
+              {"key": "de_doua", "label": "De doua ori"},
+              {"key": "trei_plus", "label": "De trei ori sau mai mult"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea VI: Prioritati Viitoare",
+          "questions": [
+            {"id": "A9", "type": "likert_grid", "scale": "usefulness", "tag": "survey-native", "text": "Cat de valoroase ar fi pentru dumneavoastra urmatoarele functionalitati, daca nu le aveti deja?", "rows": [
+              {"key": "ai_abandon", "label": "Sistem AI de alerta timpurie pentru riscul de abandon scolar"},
+              {"key": "dashboard", "label": "Dashboard centralizat cu date in timp real pentru conducere"},
+              {"key": "ceac_scim", "label": "Generare automata a rapoartelor CEAC si SCIM din datele existente"},
+              {"key": "siiir", "label": "Raportare automata integrata cu SIIIR"},
+              {"key": "parinti_app", "label": "Comunicare directa cu parintii prin aplicatie mobila"},
+              {"key": "anap", "label": "Planificarea si monitorizarea achizitiilor publice (ANAP)"},
+              {"key": "portofoliu", "label": "Portofoliul digital al elevului acumulat pe parcursul anilor de scoala"},
+              {"key": "pnrr", "label": "Instrumente pentru monitorizarea finantarilor PNRR sau europene"},
+              {"key": "multi_structuri", "label": "Gestionarea mai multor structuri sau unitati arondate dintr-un singur cont"},
+              {"key": "comunicare_isj", "label": "Comunicare directa cu primaria sau ISJ din platforma"}
+            ]},
+            {"id": "A11", "type": "free_text", "tag": "survey-native", "max_length": 300, "moderated": true, "text": "Daca ati putea schimba un singur lucru la birocratia scolara cu ajutorul tehnologiei, care ar fi acela?"}
+          ]
+        }
+      ]
+    },
+
+    "teacher": {
+      "label": "Profesori",
+      "sections": [
+        {
+          "title": "Firmographics",
+          "questions": [
+            {"id": "BF1", "type": "single_select", "text": "La ce nivel predati preponderent?", "options": [
+              {"key": "gradinita", "label": "Gradinita / Invatamant prescolar"},
+              {"key": "primar", "label": "Primar (clasele 0-4)"},
+              {"key": "gimnaziu", "label": "Gimnaziu (clasele 5-8)"},
+              {"key": "liceu", "label": "Liceu (clasele 9-12)"},
+              {"key": "multiple", "label": "Predau la mai multe niveluri"}
+            ]},
+            {"id": "BF2", "type": "single_select", "text": "Ce tip de unitate scolara?", "options_ref": "school_type"},
+            {"id": "BF3", "type": "single_select", "text": "Cati ani de experienta aveti in invatamant?", "options": [
+              {"key": "lt5y", "label": "Sub 5 ani"},
+              {"key": "5_15y", "label": "5-15 ani"},
+              {"key": "15_25y", "label": "15-25 ani"},
+              {"key": "gt25y", "label": "Peste 25 de ani"}
+            ]},
+            {"id": "BF4", "type": "single_select", "text": "In ce tip de localitate se afla unitatea dumneavoastra?", "options_ref": "locality"},
+            {"id": "BF5", "type": "single_select", "text": "Cati elevi are unitatea scolara in care predati?", "options_ref": "school_size"}
+          ]
+        },
+        {
+          "title": "Profil de digitalizare",
+          "questions": [
+            {"id": "BD0", "type": "multi_select", "segmentation": true, "exclusive_option": "none", "text": "Ce instrumente digitale folositi actualmente in activitatea dumneavoastra la scoala?", "options": [
+              {"key": "catalog", "label": "Catalog electronic pentru note si absente"},
+              {"key": "parent_app", "label": "Aplicatie mobila sau portal pentru comunicarea cu parintii"},
+              {"key": "content", "label": "Platforma de continut educational digital (resurse interactive, simulari, biblioteca)"},
+              {"key": "testing", "label": "Testare si evaluare online"},
+              {"key": "gamification", "label": "Instrumente de gamificare si engagement in clasa (Kahoot, ClassDojo, Wordwall etc.)"},
+              {"key": "none", "label": "Nu folosesc platforme sau instrumente digitale in activitatea scolara"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea I: Fluxul Zilnic",
+          "questions": [
+            {"id": "B1", "type": "single_select", "tag": "survey-native", "text": "La finalul zilei de lucru, care este principalul lucru care va impiedica sa plecati la timp acasa?", "options": [
+              {"key": "catalog", "label": "Completarea notelor si absentelor (inclusiv in sisteme paralele sau pe hartie)"},
+              {"key": "corectare", "label": "Pregatirea si corectarea lucrarilor si testelor"},
+              {"key": "parinti", "label": "Comunicarea cu parintii pe grupuri neoficiale de WhatsApp sau telefon"},
+              {"key": "admin", "label": "Completarea condicii, portofoliilor de elev sau a altor formulare administrative"},
+              {"key": "lectii", "label": "Pregatirea materialelor pentru lectiile urmatoare"},
+              {"key": "altceva", "label": "Altceva"}
+            ]},
+            {"id": "B2", "type": "likert_grid", "scale": "efficiency", "tag": "survey-native", "show_if": {"question": "BD0", "not_only": "none"}, "text": "Cat de mult a crescut eficienta in fiecare aspect al activitatii dumneavoastra de cand folositi instrumente digitale?", "rows": [
+              {"key": "catalog_zilnic", "label": "Timpul necesar pentru completarea catalogului zilnic"},
+              {"key": "parinti", "label": "Comunicarea cu parintii"},
+              {"key": "final_semestru", "label": "Pregatirea situatiilor la final de semestru"},
+              {"key": "materiale", "label": "Accesul la materiale didactice si resurse pentru lectii"},
+              {"key": "evaluare", "label": "Evaluarea elevilor si urmarirea progresului individual"},
+              {"key": "inspectii", "label": "Pregatirea pentru inspectii"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea II: Predarea Digitala",
+          "questions": [
+            {"id": "B_ped1", "type": "multi_select", "exclusive_option": "none", "audit": "3.1", "text": "Ce faceti in mod curent cu instrumentele digitale in activitatea de predare?", "options": [
+              {"key": "prezentari", "label": "Folosesc prezentari digitale in predare"},
+              {"key": "teme", "label": "Transmit teme si primesc lucrari digital"},
+              {"key": "interactive", "label": "Folosesc resurse interactive (simulari, modele 3D, experimente virtuale)"},
+              {"key": "evaluare", "label": "Folosesc instrumente de evaluare digitala (teste, fise generate digital)"},
+              {"key": "creez", "label": "Creez continut digital original pentru lectii"},
+              {"key": "lms", "label": "Folosesc o platforma prin care elevii acceseaza materiale si teme (LMS)"},
+              {"key": "none", "label": "Niciunul dintre acestea in mod regulat"}
+            ]},
+            {"id": "B_ped2", "type": "single_select", "tag": "survey-native", "text": "Cat de centrala este tehnologia digitala in modul in care predati?", "options": [
+              {"key": "central", "label": "Digitalul este central: imi structurez lectiile in jurul lui"},
+              {"key": "des", "label": "Il folosesc des, pentru anumite tipuri de lectii sau activitati"},
+              {"key": "ocazional", "label": "Il folosesc ocazional, mai mult ca supliment"},
+              {"key": "as_folosi", "label": "As folosi mai mult, dar imi lipseste timpul sau resursele"},
+              {"key": "traditional", "label": "Predau in continuare preponderent in mod traditional"}
+            ]},
+            {"id": "B_ped3", "type": "single_select", "ladder": true, "audit": "3.1", "text": "Cum ati descrie nivelul dumneavoastra de competenta digitala pentru activitatea didactica?", "options": [
+              {"key": "dificultati", "label": "Am dificultati cu instrumentele digitale de baza"},
+              {"key": "baza", "label": "Ma descurc cu instrumentele de baza, dar rareori merg mai departe"},
+              {"key": "confortabil", "label": "Folosesc digital in mod curent si sunt confortabil cu majoritatea instrumentelor"},
+              {"key": "explorez", "label": "Explorez activ instrumente noi si ii ajut si pe colegi"}
+            ]},
+            {"id": "B_ped4", "type": "single_select", "ladder": true, "audit": "3.1", "text": "Ati beneficiat de formare digitala formala in ultimii 2 ani?", "options": [
+              {"key": "niciuna", "label": "Nu a existat nicio formare"},
+              {"key": "generala", "label": "O formare generala obligatorie, cu impact limitat"},
+              {"key": "punctuale", "label": "Formari punctuale pe instrumente specifice, la cerere"},
+              {"key": "structurat", "label": "Un program structurat de dezvoltare a competentelor, cu urmarire a progresului"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea III: Adancimea Adoptarii",
+          "questions": [
+            {"id": "B3", "type": "single_select", "tag": "survey-native", "show_if": {"question": "BD0", "not_only": "none"}, "text": "Daca platforma digitala pe care o folositi ar disparea maine, cat de repede ati simti absenta?", "options": [
+              {"key": "imediat", "label": "Imediat: nu mai pot concepe sa lucrez altfel"},
+              {"key": "zile", "label": "In cateva zile: ar fi incomod, dar ne-am descurca"},
+              {"key": "probabil_nu", "label": "Probabil nu: mai am carnetul fizic sau alte sisteme paralele"},
+              {"key": "nu_folosesc", "label": "Nu folosesc o platforma digitala in prezent"}
+            ]},
+            {"id": "B4", "type": "multi_select", "tag": "survey-native", "text": "Cum gestionati in prezent comunicarea cu parintii elevilor dumneavoastra?", "options": [
+              {"key": "platforma", "label": "Prin platforma sau aplicatia scolii"},
+              {"key": "whatsapp", "label": "Prin grupuri de WhatsApp sau Messenger"},
+              {"key": "sms", "label": "Prin SMS sau apeluri telefonice"},
+              {"key": "carnet", "label": "Prin carnetul de corespondenta fizic"},
+              {"key": "sedinte", "label": "La sedintele cu parintii (fata in fata)"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea IV: Bariere si Suport Digital",
+          "questions": [
+            {"id": "B5a", "type": "likert_grid", "scale": "hindrance", "tag": "survey-native", "text": "Cat de mult va impiedica fiecare dintre urmatoarele aspecte sa folositi instrumentele digitale la capacitate maxima?", "rows": [
+              {"key": "date_multiple", "label": "Necesitatea de a introduce aceleasi date in mai multe sisteme simultan"},
+              {"key": "internet", "label": "Calitatea slaba sau instabilitatea conexiunii la internet din scoala"},
+              {"key": "interfata", "label": "Interfata greu de utilizat sau neintuitiva"},
+              {"key": "hardware", "label": "Lipsa echipamentelor hardware adecvate"},
+              {"key": "incertitudine", "label": "Incertitudinea privind ce este obligatoriu digital si ce ramane pe hartie"},
+              {"key": "stres", "label": "Nivelul de stres in perioadele de incheiere a semestrului sau de audit"}
+            ]},
+            {"id": "B5b", "type": "likert_grid", "scale": "agreement", "tag": "survey-native", "text": "Cat de mult sunteti de acord cu fiecare afirmatie despre suportul digital disponibil in scoala dumneavoastra?", "rows": [
+              {"key": "training", "label": "Am primit un training adecvat atunci cand platforma a fost introdusa"},
+              {"key": "info_noi", "label": "Primesc informatii cand sunt adaugate functionalitati noi"},
+              {"key": "coleg", "label": "Exista un coleg sau responsabil tehnic la care pot apela rapid"},
+              {"key": "ghiduri", "label": "Stiu unde sa gasesc ghiduri sau tutoriale pentru functiile pe care le folosesc"},
+              {"key": "suport", "label": "Suportul tehnic din partea furnizorului raspunde rapid cand am o problema"}
+            ]},
+            {"id": "B6", "type": "single_select", "tag": "survey-native", "text": "Cand intampinati o problema cu platforma digitala, care este primul lucru pe care il faceti?", "options": [
+              {"key": "suport", "label": "Sun sau scriu la suportul tehnic al furnizorului"},
+              {"key": "coleg", "label": "Intreb un coleg din scoala care se descurca mai bine cu tehnologia"},
+              {"key": "google", "label": "Caut pe Google sau YouTube o solutie"},
+              {"key": "singur", "label": "Incerc sa rezolv singur prin trial and error"},
+              {"key": "evit", "label": "Evit sa mai folosesc acea functionalitate"},
+              {"key": "hartie", "label": "Revin la varianta pe hartie sau la sistemul anterior"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea V: Nevoi Viitoare",
+          "questions": [
+            {"id": "B7", "type": "likert_grid", "scale": "usefulness", "tag": "survey-native", "text": "Cat de utile v-ar fi urmatoarele functionalitati in activitatea dumneavoastra?", "rows": [
+              {"key": "resurse", "label": "Resurse educationale interactive (simulari, modele 3D, experimente virtuale)"},
+              {"key": "teste", "label": "Generare automata a testelor si fiselor de evaluare"},
+              {"key": "notificari", "label": "Notificari automate catre parinti la introducerea notelor si absentelor"},
+              {"key": "offline", "label": "Acces offline la catalog in zone cu internet slab sau instabil"},
+              {"key": "ai", "label": "Asistent AI pentru planificarea si adaptarea lectiilor"},
+              {"key": "training", "label": "Training continuu si tutoriale integrate direct in platforma"},
+              {"key": "comunitate", "label": "Comunitate de practica cu alti profesori pentru schimb de materiale"}
+            ]},
+            {"id": "B8", "type": "free_text", "tag": "survey-native", "max_length": 300, "moderated": true, "text": "Ce schimbare concreta in instrumentele digitale v-ar economisi cel mai mult timp saptamanal?"}
+          ]
+        }
+      ]
+    },
+
+    "secretariat": {
+      "label": "Secretariat / Administrativ",
+      "sections": [
+        {
+          "title": "Firmographics",
+          "questions": [
+            {"id": "CF1", "type": "single_select", "text": "In ce tip de unitate lucrati?", "options_ref": "school_type"},
+            {"id": "CF2", "type": "single_select", "text": "Care este rolul dumneavoastra principal?", "options": [
+              {"key": "secretar", "label": "Secretar / Secretar sef"},
+              {"key": "administrator", "label": "Administrator de patrimoniu"},
+              {"key": "contabil", "label": "Contabil / Personal financiar"},
+              {"key": "informatician", "label": "Informatician / Responsabil IT"},
+              {"key": "alt", "label": "Alt personal auxiliar sau administrativ"}
+            ]},
+            {"id": "CF3", "type": "single_select", "text": "In ce tip de localitate se afla unitatea dumneavoastra?", "options_ref": "locality"},
+            {"id": "CF4", "type": "single_select", "text": "Cati elevi are unitatea in care lucrati?", "options_ref": "school_size"},
+            {"id": "CF5", "type": "single_select", "text": "De cati ani lucrati in administratia unei unitati de invatamant?", "options": [
+              {"key": "lt2y", "label": "Sub 2 ani"},
+              {"key": "2_5y", "label": "2-5 ani"},
+              {"key": "5_10y", "label": "5-10 ani"},
+              {"key": "gt10y", "label": "Peste 10 ani"}
+            ]}
+          ]
+        },
+        {
+          "title": "Profil de digitalizare",
+          "questions": [
+            {"id": "CD0", "type": "multi_select", "segmentation": true, "exclusive_option": "none", "text": "Ce instrumente digitale folositi actualmente in activitatea administrativa?", "options": [
+              {"key": "catalog", "label": "Catalog electronic si condica digitala"},
+              {"key": "doc_gen", "label": "Generare automata de documente (adeverinte, diplome, certificate, situatii scolare)"},
+              {"key": "dosare", "label": "Gestiune digitala a dosarelor de elevi si a burselor"},
+              {"key": "siiir", "label": "Aplicatie de raportare catre SIIIR"},
+              {"key": "compliance", "label": "Module de conformitate sau proceduri (SCIM, CEAC, Achizitii Publice)"},
+              {"key": "semnatura", "label": "Semnatura electronica pentru documente oficiale"},
+              {"key": "registratura", "label": "Registratura sau circuit digital al documentelor"},
+              {"key": "none", "label": "Nu folosesc platforme digitale in activitatea administrativa"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea I: Sarcina Zilnica",
+          "questions": [
+            {"id": "C1", "type": "single_select", "tag": "survey-native", "text": "La finalul zilei de lucru, care este principalul lucru care va impiedica sa plecati la timp acasa?", "options": [
+              {"key": "documente", "label": "Generarea si verificarea documentelor oficiale (adeverinte, diplome, situatii)"},
+              {"key": "siiir", "label": "Centralizarea manuala a datelor pentru raportarile catre SIIIR sau ISJ"},
+              {"key": "circuit_fizic", "label": "Gestionarea circuitului fizic al documentelor si a dosarelor cu sina"},
+              {"key": "date_multiple", "label": "Introducerea acelorasi date in mai multe sisteme sau registre"},
+              {"key": "urgente", "label": "Solicitari urgente venite de la conducere, parinti sau alte institutii"},
+              {"key": "altceva", "label": "Altceva"}
+            ]},
+            {"id": "C2", "type": "likert_grid", "scale": "timeband", "tag": "survey-native", "text": "Cat timp dedicati intr-o saptamana obisnuita fiecareia dintre urmatoarele activitati?", "rows": [
+              {"key": "documente", "label": "Generarea documentelor oficiale (adeverinte, diplome, certificate)"},
+              {"key": "siiir", "label": "Centralizarea datelor si raportarea catre SIIIR"},
+              {"key": "dosare", "label": "Gestionarea dosarelor de elevi si a burselor"},
+              {"key": "circuit_fizic", "label": "Circuitul fizic al documentelor (printare, semnaturi, arhivare)"},
+              {"key": "inspectii", "label": "Pregatirea documentatiei pentru inspectii si audituri"}
+            ]},
+            {"id": "C3", "type": "single_select", "tag": "survey-native", "text": "Cat de des trebuie sa introduceti aceleasi informatii in mai multe locuri (de exemplu, si in registrul fizic, si in platforma digitala, si intr-un fisier separat)?", "options": [
+              {"key": "niciodata", "label": "Aproape niciodata: datele se introduc o singura data"},
+              {"key": "ocazional", "label": "Ocazional: pentru anumite raportari specifice"},
+              {"key": "frecvent", "label": "Frecvent: pentru o buna parte din activitatea curenta"},
+              {"key": "permanent", "label": "Permanent: dubla evidenta este regula, nu exceptia"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea II: Adoptare si Eficienta",
+          "questions": [
+            {"id": "C4", "type": "single_select", "tag": "survey-native", "show_if": {"question": "CD0", "not_only": "none"}, "text": "Daca platforma digitala pe care o folositi ar disparea maine, cat de repede ati simti absenta?", "options": [
+              {"key": "imediat", "label": "Imediat: activitatea s-ar bloca, nu mai pot lucra altfel"},
+              {"key": "zile", "label": "In cateva zile: ar fi dificil, dar ne-am descurca temporar"},
+              {"key": "probabil_nu", "label": "Probabil nu: pastram oricum si evidenta pe hartie"},
+              {"key": "nu_folosesc", "label": "Nu folosesc o platforma digitala in prezent"}
+            ]},
+            {"id": "C5", "type": "likert_grid", "scale": "efficiency", "tag": "survey-native", "show_if": {"question": "CD0", "not_only": "none"}, "text": "Fata de situatia de dinaintea platformei actuale, cat de mult a crescut eficienta in fiecare dintre urmatoarele aspecte?", "rows": [
+              {"key": "documente", "label": "Timpul necesar pentru generarea documentelor oficiale"},
+              {"key": "acuratete", "label": "Acuratetea documentelor si reducerea erorilor"},
+              {"key": "siiir", "label": "Raportarea catre SIIIR si alte institutii"},
+              {"key": "dosare", "label": "Gestionarea dosarelor de elevi si a burselor"},
+              {"key": "inspectii", "label": "Pregatirea pentru inspectii si audituri"},
+              {"key": "hartie", "label": "Volumul de hartie si de arhivare fizica"}
+            ]},
+            {"id": "C6", "type": "single_select", "tag": "survey-native", "text": "Care este cel mai mare obstacol in calea folosirii depline a instrumentelor digitale in activitatea administrativa?", "options": [
+              {"key": "dubla_evidenta", "label": "Necesitatea de a mentine in paralel si evidenta pe hartie"},
+              {"key": "acoperire", "label": "Platforma nu acopera toate tipurile de documente de care am nevoie"},
+              {"key": "interop_siiir", "label": "Lipsa interoperabilitatii cu SIIIR sau alte sisteme obligatorii"},
+              {"key": "interfata", "label": "Interfata este greu de utilizat sau neintuitiva"},
+              {"key": "training", "label": "Lipsa trainingului adecvat pentru functiile administrative"},
+              {"key": "suport", "label": "Calitatea slaba a suportului tehnic din partea furnizorului"},
+              {"key": "none", "label": "Nu exista obstacole semnificative"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea III: Suport si Conformitate",
+          "questions": [
+            {"id": "C7", "type": "likert_grid", "scale": "agreement", "tag": "survey-native", "text": "Cat de mult sunteti de acord cu fiecare afirmatie despre activitatea administrativa din unitatea dumneavoastra?", "rows": [
+              {"key": "training", "label": "Am primit un training adecvat pentru instrumentele digitale pe care le folosesc"},
+              {"key": "ajutor", "label": "Stiu unde sa gasesc ajutor rapid cand am o problema tehnica"},
+              {"key": "stres", "label": "Perioadele de raportare obligatorie sunt o sursa majora de stres"},
+              {"key": "capacitate", "label": "As putea prelua mai multe sarcini daca as petrece mai putin timp cu documentele"},
+              {"key": "eroare", "label": "Riscul de eroare in documentele oficiale ma preocupa constant"}
+            ]},
+            {"id": "C8", "type": "single_select", "tag": "survey-native", "text": "Cat de pregatita este unitatea dumneavoastra pentru un control sau o inspectie neanuntata, din punctul de vedere al documentatiei?", "options": [
+              {"key": "complet", "label": "Complet pregatiti: documentatia este oricand la zi si accesibila"},
+              {"key": "mare_parte", "label": "In mare parte pregatiti: ar fi nevoie de cateva ore de organizare"},
+              {"key": "partial", "label": "Partial: pregatirea pentru control inseamna zile de munca suplimentara"},
+              {"key": "nepregatiti", "label": "Nepregatiti: fiecare control este o sursa majora de stres"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea IV: Nevoi Viitoare",
+          "questions": [
+            {"id": "C9", "type": "likert_grid", "scale": "usefulness", "tag": "survey-native", "text": "Cat de utile v-ar fi urmatoarele functionalitati in activitatea administrativa?", "rows": [
+              {"key": "doc_gen", "label": "Generare automata a tuturor tipurilor de documente oficiale"},
+              {"key": "semnatura", "label": "Semnatura electronica integrata in fluxul de documente"},
+              {"key": "siiir", "label": "Raportare automata integrata cu SIIIR (fara reintroducerea datelor)"},
+              {"key": "dosar_elev", "label": "Dosar digital complet al elevului, accesibil instantaneu"},
+              {"key": "burse", "label": "Gestionarea digitala a burselor si a dosarelor sociale"},
+              {"key": "arhiva", "label": "Arhiva digitala cautabila a documentelor institutiei"},
+              {"key": "inspectii", "label": "Pregatirea automata a documentatiei pentru inspectii"}
+            ]},
+            {"id": "C10", "type": "free_text", "tag": "survey-native", "max_length": 300, "moderated": true, "text": "Daca ati putea elimina o singura sarcina administrativa repetitiva cu ajutorul tehnologiei, care ar fi aceea?"}
+          ]
+        }
+      ]
+    },
+
+    "parent": {
+      "label": "Parinti",
+      "sections": [
+        {
+          "title": "Context",
+          "questions": [
+            {"id": "DF1", "type": "single_select", "text": "Cati copii aveti in prezent in sistemul de invatamant (gradinita, scoala sau liceu)?", "options": [
+              {"key": "unu", "label": "Un copil"},
+              {"key": "doi", "label": "Doi copii"},
+              {"key": "trei_plus", "label": "Trei sau mai multi copii"}
+            ]},
+            {"id": "DF2", "type": "single_select", "text": "La ce nivel invata copilul dumneavoastra (sau copilul cel mai mare, daca aveti mai multi)?", "options": [
+              {"key": "gradinita", "label": "Gradinita"},
+              {"key": "primar", "label": "Primar (clasele 0-4)"},
+              {"key": "gimnaziu", "label": "Gimnaziu (clasele 5-8)"},
+              {"key": "liceu", "label": "Liceu (clasele 9-12)"}
+            ]},
+            {"id": "DF3", "type": "single_select", "text": "In ce tip de localitate se afla unitatea de invatamant?", "options_ref": "locality"}
+          ]
+        },
+        {
+          "title": "Sectiunea I: Accesul la Informatie",
+          "questions": [
+            {"id": "D1", "type": "single_select", "tag": "survey-native", "text": "In cat timp aflati, de obicei, ca s-a pus o nota sau o absenta copilului dumneavoastra?", "options": [
+              {"key": "instant", "label": "Instant: primesc o notificare pe telefon"},
+              {"key": "aceeasi_zi", "label": "In aceeasi zi: verific aplicatia sau platforma seara"},
+              {"key": "cateva_zile", "label": "Dupa cateva zile: cand apuc sa vorbesc cu copilul"},
+              {"key": "sedinta", "label": "Doar la sedinta cu parintii"},
+              {"key": "fara_acces", "label": "Nu am acces digital la aceste informatii"}
+            ]},
+            {"id": "D2", "type": "single_select", "tag": "survey-native", "text": "Prin ce canal primiti cele mai importante informatii de la scoala?", "options": [
+              {"key": "platforma", "label": "Aplicatie sau platforma dedicata a scolii"},
+              {"key": "whatsapp", "label": "Grupuri de WhatsApp sau Messenger"},
+              {"key": "sms", "label": "SMS-uri sau apeluri telefonice"},
+              {"key": "carnet", "label": "Carnetul de elev (format fizic)"},
+              {"key": "sedinte", "label": "Anunturi la sedintele cu parintii"}
+            ]},
+            {"id": "D3", "type": "single_select", "tag": "survey-native", "text": "Cat de multumit sunteti de modul in care comunicati in prezent cu scoala copilului dumneavoastra?", "options": [
+              {"key": "foarte_multumit", "label": "Foarte multumit"},
+              {"key": "multumit", "label": "Multumit"},
+              {"key": "neutru", "label": "Neutru"},
+              {"key": "nemultumit", "label": "Nemultumit"},
+              {"key": "foarte_nemultumit", "label": "Foarte nemultumit"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea II: Experienta Digitala",
+          "questions": [
+            {"id": "D4", "type": "single_select", "segmentation": true, "tag": "survey-native", "text": "Folositi in prezent o aplicatie sau o platforma digitala pentru a urmari situatia scolara a copilului?", "options": [
+              {"key": "uses_regularly", "label": "Da, o folosesc regulat"},
+              {"key": "uses_rarely", "label": "Da, dar o folosesc rar"},
+              {"key": "offered_unused", "label": "Nu, desi scoala ofera una"},
+              {"key": "school_none", "label": "Nu, scoala nu ofera o astfel de aplicatie"}
+            ]},
+            {"id": "D5", "type": "likert_grid", "scale": "efficiency", "tag": "survey-native", "show_if": {"question": "D4", "not_equals": "school_none"}, "text": "Cat de mult v-au imbunatatit instrumentele digitale relatia cu scoala, in fiecare dintre urmatoarele aspecte?", "rows": [
+              {"key": "note", "label": "Rapiditatea cu care aflu notele si absentele"},
+              {"key": "profesori", "label": "Comunicarea directa cu profesorii"},
+              {"key": "progres", "label": "Intelegerea progresului real al copilului"},
+              {"key": "orar", "label": "Accesul la orar, teme si anunturi"}
+            ]},
+            {"id": "D5b", "type": "multi_select", "exclusive_option": "none", "audit": "2.3/3.6", "show_if": {"question": "D4", "not_equals": "school_none"}, "text": "Cat de des foloseste copilul dumneavoastra instrumente digitale pentru invatarea propriu-zisa, acasa sau la scoala?", "options": [
+              {"key": "teme", "label": "Isi face temele sau lucrarile printr-o platforma digitala"},
+              {"key": "materiale", "label": "Acceseaza acasa materiale, lectii sau inregistrari de la scoala"},
+              {"key": "interactive", "label": "Foloseste resurse educationale interactive oferite de scoala"},
+              {"key": "evaluare", "label": "Exerseaza sau este evaluat prin aplicatii digitale"},
+              {"key": "proiecte", "label": "Lucreaza la proiecte digitale (prezentari, video, programare)"},
+              {"key": "none", "label": "Nu foloseste instrumente digitale pentru invatare, dupa cate stiu"}
+            ]},
+            {"id": "D5c", "type": "single_select", "tag": "survey-native", "text": "Cat de important este pentru dumneavoastra ca scoala sa foloseasca metode moderne de predare digitala, dincolo de comunicarea cu parintii?", "options": [
+              {"key": "foarte_important", "label": "Foarte important: este un criteriu pentru mine"},
+              {"key": "important", "label": "Important, dar nu decisiv"},
+              {"key": "neutru", "label": "Neutru"},
+              {"key": "nu_prioritate", "label": "Nu este o prioritate pentru mine"},
+              {"key": "traditional", "label": "Prefer metodele traditionale de predare"}
+            ]},
+            {"id": "D6", "type": "single_select", "tag": "survey-native", "show_if": {"question": "D4", "not_equals": "school_none"}, "text": "Va simtiti mai conectat la viata scolara a copilului de cand scoala foloseste instrumente digitale?", "options": [
+              {"key": "semnificativ", "label": "Da, semnificativ mai conectat"},
+              {"key": "putin", "label": "Da, putin mai conectat"},
+              {"key": "fara_diferenta", "label": "Nu am observat o diferenta"},
+              {"key": "mai_putin", "label": "Ma simt mai putin conectat decat inainte"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea III: Incredere si Asteptari",
+          "questions": [
+            {"id": "D7", "type": "single_select", "tag": "survey-native", "text": "Cat de mult va ingrijoreaza siguranta datelor personale ale copilului in mediul digital scolar?", "options": [
+              {"key": "deloc", "label": "Deloc: am incredere in solutiile oficiale si omologate"},
+              {"key": "putin", "label": "Putin: consider ca beneficiile depasesc riscurile"},
+              {"key": "moderat", "label": "Moderat: imi pun intrebari, dar folosesc platforma"},
+              {"key": "mult", "label": "Mult: este o preocupare reala pentru mine"}
+            ]},
+            {"id": "D8", "type": "single_select", "tag": "survey-native", "text": "Care dintre urmatoarele v-ar fi cel mai util in relatia cu scoala?", "options": [
+              {"key": "continut", "label": "Sa vad ce invata efectiv copilul la clasa (resurse, materiale)"},
+              {"key": "profesori", "label": "Sa comunic direct si rapid cu fiecare profesor"},
+              {"key": "semnale", "label": "Sa primesc din timp semnale despre scaderea performantei copilului"},
+              {"key": "orar", "label": "Sa am acces la orar, meniul cantinei si anunturi actualizate"},
+              {"key": "consolidare", "label": "Sa reduc numarul de aplicatii si grupuri pe care le folosesc acum"}
+            ]},
+            {"id": "D9", "type": "free_text", "tag": "survey-native", "max_length": 300, "moderated": true, "text": "Care este singurul lucru care v-ar imbunatati cel mai mult relatia cu scoala copilului?"}
+          ]
+        }
+      ]
+    },
+
+    "inspector": {
+      "label": "Inspectori / Autoritati educationale",
+      "sections": [
+        {
+          "title": "Context",
+          "questions": [
+            {"id": "EF1", "type": "single_select", "text": "Care este rolul dumneavoastra in cadrul autoritatii educationale?", "options": [
+              {"key": "specialitate", "label": "Inspector scolar de specialitate"},
+              {"key": "general", "label": "Inspector scolar general / adjunct"},
+              {"key": "conducere", "label": "Personal de conducere in cadrul ISJ / DJIP"},
+              {"key": "djip_monitorizare", "label": "Personal din cadrul DJIP cu atributii de monitorizare"},
+              {"key": "alt", "label": "Alt rol in administratia educationala"}
+            ]},
+            {"id": "EF2", "type": "single_select", "text": "Cate unitati de invatamant se afla in portofoliul dumneavoastra de monitorizare?", "options": [
+              {"key": "lt10", "label": "Sub 10 unitati"},
+              {"key": "10_30", "label": "10-30 de unitati"},
+              {"key": "30_60", "label": "30-60 de unitati"},
+              {"key": "gt60", "label": "Peste 60 de unitati"}
+            ]},
+            {"id": "EF3", "type": "single_select", "text": "Ce tip de judet sau zona acoperiti preponderent?", "options": [
+              {"key": "rural", "label": "Preponderent rural"},
+              {"key": "mixt", "label": "Mixt (rural si urban in proportii relativ egale)"},
+              {"key": "urban", "label": "Preponderent urban"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea I: Imaginea de Ansamblu",
+          "questions": [
+            {"id": "E1", "type": "single_select", "tag": "survey-native", "text": "Cum ati descrie, in ansamblu, stadiul de digitalizare al unitatilor din portofoliul dumneavoastra?", "options": [
+              {"key": "majoritate_digital", "label": "Majoritatea sunt digitalizate complet sau in mare parte"},
+              {"key": "mixt", "label": "Imaginea este mixta: unele avansate, altele la inceput"},
+              {"key": "incipient", "label": "Majoritatea sunt la un stadiu incipient"},
+              {"key": "eterogen", "label": "Diferentele dintre unitati sunt foarte mari si greu de generalizat"}
+            ]},
+            {"id": "E2", "type": "single_select", "tag": "survey-native", "text": "Care este, dupa observatia dumneavoastra, principalul factor care diferentiaza unitatile digitalizate de cele ramase in urma?", "options": [
+              {"key": "finantare", "label": "Resursele financiare si accesul la finantari (PNRR, buget local)"},
+              {"key": "conducere", "label": "Atitudinea si implicarea conducerii unitatii"},
+              {"key": "competente", "label": "Competentele digitale ale personalului"},
+              {"key": "infrastructura", "label": "Infrastructura tehnica (internet, echipamente)"},
+              {"key": "judetean", "label": "Sprijinul si coordonarea de la nivel judetean"},
+              {"key": "piata", "label": "Calitatea solutiilor digitale disponibile pe piata"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea II: Raportare si Date",
+          "questions": [
+            {"id": "E3", "type": "likert_grid", "scale": "hindrance", "audit": "3.4", "text": "Cat de mult va ingreuneaza fiecare dintre urmatoarele aspecte activitatea de monitorizare?", "rows": [
+              {"key": "colectare", "label": "Colectarea manuala a datelor de la unitati"},
+              {"key": "formate", "label": "Formatele neunitare in care unitatile trimit raportarile"},
+              {"key": "intarzieri", "label": "Intarzierile in transmiterea datelor de la unitati"},
+              {"key": "centralizare", "label": "Lipsa unei imagini centralizate, in timp real, a portofoliului"},
+              {"key": "acuratete", "label": "Verificarea acuratetei datelor primite"}
+            ]},
+            {"id": "E4", "type": "single_select", "audit": "3.5", "text": "Cat de mult ar imbunatati activitatea dumneavoastra o raportare digitala standardizata, in care datele sa ajunga automat de la unitati?", "options": [
+              {"key": "transforma", "label": "Ar transforma complet activitatea de monitorizare"},
+              {"key": "semnificativ", "label": "Ar imbunatati semnificativ activitatea"},
+              {"key": "moderat", "label": "Ar ajuta moderat"},
+              {"key": "minor", "label": "Diferenta ar fi minora"},
+              {"key": "nu_prioritate", "label": "Nu este o prioritate in activitatea curenta"}
+            ]}
+          ]
+        },
+        {
+          "title": "Sectiunea III: Prioritati de Sistem",
+          "questions": [
+            {"id": "E5", "type": "likert_grid", "scale": "usefulness", "tag": "survey-native", "text": "Cat de utile ar fi urmatoarele, la nivelul portofoliului dumneavoastra?", "rows": [
+              {"key": "tablou", "label": "Tablou centralizat cu indicatorii cheie ai tuturor unitatilor"},
+              {"key": "raportare", "label": "Raportare automata si standardizata dinspre unitati"},
+              {"key": "abandon", "label": "Semnale timpurii privind riscul de abandon la nivel de unitate"},
+              {"key": "siiir", "label": "Interoperabilitate completa cu SIIIR"},
+              {"key": "comparabilitate", "label": "Comparabilitatea indicatorilor intre unitati similare"}
+            ]},
+            {"id": "E6", "type": "single_select", "tag": "survey-native", "text": "Care considerati ca ar trebui sa fie principala prioritate in digitalizarea invatamantului la nivelul judetului dumneavoastra in urmatorii doi ani?", "options": [
+              {"key": "echipamente", "label": "Dotarea cu echipamente si infrastructura de baza"},
+              {"key": "platforme", "label": "Adoptarea unor platforme de management in toate unitatile"},
+              {"key": "standardizare", "label": "Standardizarea raportarii si a fluxurilor de date"},
+              {"key": "formare", "label": "Formarea digitala a personalului"},
+              {"key": "automatizare", "label": "Reducerea birocratiei prin automatizare"}
+            ]},
+            {"id": "E7", "type": "free_text", "tag": "survey-native", "max_length": 300, "moderated": true, "text": "Din perspectiva dumneavoastra de monitorizare a mai multor unitati, care este cea mai mare oportunitate ratata in digitalizarea scolilor din Romania?"}
+          ]
+        }
+      ]
+    }
+  }
+}

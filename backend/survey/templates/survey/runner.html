@@ -1,0 +1,68 @@
+{% extends "survey/base.html" %}
+{% load static %}
+
+{% block title %}Studiu Național · Starea Digitalizării{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* Remove default body scroll — runner manages its own viewport */
+  html, body { height: 100%; overflow: hidden; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div
+  class="runner-wrap"
+  id="runner"
+  data-path="{{ path }}"
+  data-catalogue-url="{% url 'survey:catalogue' %}"
+  data-start-url="{% url 'survey:start' %}"
+  data-answer-url="{% url 'survey:answer' %}"
+  data-submit-url="{% url 'survey:submit' %}"
+  data-email-url="{% url 'survey:email' %}"
+>
+
+  <!-- ── STICKY HEADER ─────────────────────────────────────────── -->
+  <header class="runner-header" role="banner">
+    <a href="{% url 'survey:landing' %}" class="runner-header__wordmark" aria-label="Înapoi la pagina studiului">Edus</a>
+
+    <div class="runner-header__progress" role="progressbar" aria-label="Progres chestionar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="runner-progress-meta">
+        <span class="runner-section-name" id="runner-section">Se încarcă…</span>
+        <span class="runner-step-count" id="runner-step"></span>
+      </div>
+      <div class="runner-bar-track">
+        <div class="runner-bar-fill" id="runner-bar"></div>
+      </div>
+    </div>
+
+    <a href="{% url 'survey:landing' %}" class="runner-header__exit">Ieșiți din studiu</a>
+  </header>
+
+  <!-- ── SCROLLABLE BODY ───────────────────────────────────────── -->
+  <main class="runner-body" id="runner-body" role="main">
+    <div class="runner-body__inner">
+      <div id="question-area">
+        <!-- JS renders question content here -->
+        <div style="display:flex;align-items:center;justify-content:center;padding:60px 0;">
+          <span style="font-size:14px;color:var(--muted);">Se pregătesc întrebările…</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── STICKY FOOTER ─────────────────────────────────────────── -->
+  <footer class="runner-footer" role="contentinfo">
+    <span class="runner-footer__time" id="runner-time" aria-live="polite"></span>
+    <div class="runner-footer__actions">
+      <button type="button" class="btn-back" id="btn-back" aria-label="Înapoi la întrebarea anterioară">←</button>
+      <button type="button" class="btn-next" id="btn-next" disabled aria-label="Continuați la întrebarea următoare">Continuați</button>
+    </div>
+  </footer>
+
+</div><!-- /runner-wrap -->
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'survey/js/runner.js' %}"></script>
+{% endblock %}

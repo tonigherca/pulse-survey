@@ -1,0 +1,221 @@
+{% extends "survey/base.html" %}
+{% load static %}
+
+{% block title %}Starea Digitalizării în Școlile din România · Studiu Național 2026{% endblock %}
+
+{% block body %}
+
+<!-- ── S1 HERO ─────────────────────────────────────────────── -->
+<section class="landing-hero" aria-labelledby="hero-title">
+  <div class="landing-hero__inner">
+
+    <div class="landing-hero__text">
+      <span class="survey-overline">Studiu Național · Ediția 2026</span>
+      <h1 class="landing-hero__h1" id="hero-title">Starea digitalizării în școlile din România</h1>
+      <p class="landing-hero__sub">
+        Primul studiu dedicat exclusiv digitalizării învățământului preuniversitar românesc,
+        construit din experiența directă a celor care o trăiesc zilnic: directori, profesori,
+        secretariate, părinți și inspectori.
+      </p>
+      <a href="#incepe" class="landing-hero__cta">Participați la studiu</a>
+    </div>
+
+    <figure class="landing-hero__figure" aria-hidden="true">
+      <div class="landing-hero__placeholder">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="4" y="4" width="40" height="40" rx="6" stroke="#307FE2" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/>
+          <path d="M16 32l6-8 5 6 4-5 7 7" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+          <circle cx="17" cy="19" r="3" stroke="#307FE2" stroke-width="1.5" opacity="0.4"/>
+        </svg>
+        <p class="landing-hero__placeholder-label">Ilustrație<br>în pregătire</p>
+      </div>
+    </figure>
+
+  </div>
+</section>
+
+{% if is_y1 %}
+<!-- ── S2 COUNTDOWN ───────────────────────────────────────── -->
+<section class="landing-section landing-section--tight" aria-label="Termen de colectare">
+  <div class="landing-inner--mid">
+    <div class="countdown-card">
+
+      <div class="countdown-card__stat" aria-live="polite" aria-atomic="true">
+        <strong class="countdown-card__number" id="countdown-days">—</strong>
+        <span class="countdown-card__unit">zile rămase</span>
+      </div>
+
+      <div class="countdown-card__divider" aria-hidden="true"></div>
+
+      <div class="countdown-card__meta">
+        <p class="countdown-card__title">Colectarea răspunsurilor se închide pe 31 august 2026.</p>
+        <p class="countdown-card__sub">
+          Participați acum — răspunsurile înregistrate după această dată nu vor fi incluse în raportul ediției 2026.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ── S3 CE ESTE ─────────────────────────────────────────── -->
+<section class="landing-section" aria-labelledby="why-heading">
+  <div class="landing-inner">
+    <h2 class="survey-heading" id="why-heading">Ce este, de ce contează, cum contribuiți</h2>
+    <p class="survey-body" style="max-width:640px;">
+      Nu există o imagine de ansamblu asupra digitalizării școlare în România.
+      Datele oficiale acoperă infrastructura, nu experiența reală. Acest studiu construiește
+      acea imagine, pornind de la cei care trăiesc digitalizarea zilnic.
+    </p>
+
+    <div class="why-grid">
+
+      <article class="why-item">
+        <span class="why-item__rule" aria-hidden="true"></span>
+        <h3 class="why-item__title">Ce măsoară</h3>
+        <p class="why-item__body">
+          Infrastructura și echipamentele, platformele de management, instrumentele de predare,
+          competențele digitale ale personalului, modul în care conducerea folosește datele și
+          relația digitală cu autoritățile. Fiecare rol răspunde doar la întrebările relevante
+          pentru activitatea sa.
+        </p>
+      </article>
+
+      <article class="why-item">
+        <span class="why-item__rule" aria-hidden="true"></span>
+        <h3 class="why-item__title">De ce contează</h3>
+        <p class="why-item__body">
+          Politicile publice se scriu pe baza datelor disponibile. Fără o imagine reală,
+          deciziile de investiție și prioritizare rămân la nivel de percepție. Fiecare răspuns
+          înregistrat adaugă greutate unui argument pe care niciun raport oficial nu îl poate
+          construi singur.
+        </p>
+      </article>
+
+      <article class="why-item">
+        <span class="why-item__rule" aria-hidden="true"></span>
+        <h3 class="why-item__title">Cum participați</h3>
+        <p class="why-item__body">
+          Alegeți rolul dumneavoastră din lista de mai jos. Studiul durează 8–12 minute,
+          funcționează pe orice telefon sau calculator, și nu necesită cont sau înregistrare.
+          Răspunsurile sunt complet anonime.
+        </p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── S4 CE PRIMIȚI ─────────────────────────────────────── -->
+<section class="landing-section" aria-labelledby="benefits-heading">
+  <div class="landing-inner--mid">
+    <h2 class="survey-heading" id="benefits-heading">Ce primiți în schimbul timpului dumneavoastră</h2>
+
+    <ul class="benefit-list" role="list">
+
+      <li class="benefit-item">
+        <span class="benefit-item__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </span>
+        <div>
+          <p class="benefit-item__title">Raportul complet, în septembrie 2026</p>
+          <p class="benefit-item__body">
+            La final, puteți lăsa o adresă de email pentru a primi raportul în momentul
+            publicării. Raportul este gratuit, public și fără gard de acces. Adresa rămâne
+            separată de răspunsuri.
+          </p>
+        </div>
+      </li>
+
+      <li class="benefit-item">
+        <span class="benefit-item__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </span>
+        <div>
+          <p class="benefit-item__title">Anonimat complet, garantat prin construcție</p>
+          <p class="benefit-item__body">
+            Nu colectăm numele dumneavoastră, numele unității sau alte date de identificare.
+            Dacă alegeți să primiți raportul, adresa de email este păstrată separat de
+            răspunsuri și nu poate fi corelată cu acestea.
+          </p>
+        </div>
+      </li>
+
+      <li class="benefit-item">
+        <span class="benefit-item__icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+        <div>
+          <p class="benefit-item__title">Date publice, fără restricții de acces</p>
+          <p class="benefit-item__body">
+            Rezultatele agregate vor fi publicate deschis pe edus.ro. Nicio instituție nu va
+            putea fi identificată în date. Raportul va prezenta trenduri naționale și regionale,
+            nu situații individuale.
+          </p>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+</section>
+
+<!-- ── S5 ROLE SELECTOR ───────────────────────────────────── -->
+<section class="landing-section" id="incepe" aria-labelledby="role-heading">
+  <div class="landing-inner--narrow">
+    <span class="survey-label-sc" id="role-heading">Începeți studiul</span>
+    <h2 class="survey-heading" style="margin-top:4px;">Care este rolul dumneavoastră?</h2>
+    <p class="role-sub">
+      Alegeți rolul pe care îl ocupați cel mai mult timp în activitatea zilnică. Veți răspunde
+      la un set de întrebări adaptat, în aproximativ 8–12 minute.
+    </p>
+
+    <nav class="role-selector" aria-label="Selectați rolul și porniți studiul">
+      <ul class="role-list">
+        {% for opt in q0_options %}
+        <li>
+          <a href="{% url 'survey:runner' %}?path={{ opt.path }}" class="role-option">
+            <span class="role-option__label">{{ opt.label }}</span>
+            <span class="role-option__arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </div>
+</section>
+
+<!-- ── S6 CREDIBILITY FOOTER ─────────────────────────────── -->
+<footer class="landing-footer" role="contentinfo">
+  <div class="landing-inner--mid">
+    <p class="credibility-text">
+      Studiul este realizat de echipa Edus, pe baza experienței de lucru cu aproape 1.000 de
+      instituții publice din România și a datelor publice din portalul SEAP. Rezultatele vor
+      fi publicate deschis pe <a href="https://edus.ro" style="color:var(--muted);text-decoration:underline;text-underline-offset:3px;">edus.ro</a>,
+      fără gard de acces.
+    </p>
+  </div>
+</footer>
+
+{% if is_y1 %}
+<script>
+(function() {
+  var cutoff = new Date('{{ wave_cutoff|escapejs }}');
+  function update() {
+    var now = new Date();
+    var diff = cutoff - now;
+    var el = document.getElementById('countdown-days');
+    if (!el) return;
+    if (diff <= 0) {
+      el.textContent = '0';
+      return;
+    }
+    el.textContent = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+  update();
+  setInterval(update, 60000);
+})();
+</script>
+{% endif %}
+
+{% endblock %}
