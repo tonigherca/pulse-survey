@@ -234,7 +234,6 @@ a { color: var(--blue); }
   border-color: var(--blue);
   background: var(--blue-light);
   color: var(--blue);
-  box-shadow: inset 3px 0 0 var(--blue);
 }
 
 .role-option__arrow {
@@ -509,7 +508,6 @@ a { color: var(--blue); }
 .radio-opt.is-selected {
   background: var(--blue-light);
   border-color: var(--blue);
-  box-shadow: inset 3px 0 0 var(--blue);
   color: var(--ink);
   font-weight: 600;
 }
@@ -581,7 +579,6 @@ a { color: var(--blue); }
 .check-opt.is-checked {
   background: var(--blue-light);
   border-color: var(--blue);
-  box-shadow: inset 3px 0 0 var(--blue);
   color: var(--ink);
   font-weight: 600;
 }
@@ -738,13 +735,12 @@ a { color: var(--blue); }
   color: var(--body);
   cursor: pointer;
   text-align: left;
-  transition: all 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
 .scale-card.is-selected {
   background: var(--blue-light);
   border-color: var(--blue);
-  box-shadow: inset 3px 0 0 var(--blue);
   color: var(--blue);
 }
 
@@ -1026,10 +1022,10 @@ a { color: var(--blue); }
    ========================================================= */
 .landing-hero {
   background: var(--blue-light);
-  padding: 72px 24px 80px;
+  padding: 72px 24px 120px;
 }
 @media (max-width: 640px) {
-  .landing-hero { padding: 48px 20px 52px; }
+  .landing-hero { padding: 48px 20px 88px; }
 }
 
 .landing-hero__inner {
@@ -1116,9 +1112,17 @@ a { color: var(--blue); }
   border-bottom: 1px solid var(--border);
 }
 .landing-section--tight { padding: 48px 24px; }
+.landing-section--countdown {
+  padding: 0 24px 56px;
+  margin-top: -64px;
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid var(--border);
+}
 @media (max-width: 640px) {
   .landing-section { padding: 48px 20px; }
   .landing-section--tight { padding: 36px 20px; }
+  .landing-section--countdown { padding: 0 20px 48px; margin-top: -48px; }
 }
 
 .landing-inner { max-width: 1080px; margin: 0 auto; }
@@ -1129,14 +1133,15 @@ a { color: var(--blue); }
    Countdown card
    ========================================================= */
 .countdown-card {
-  background: var(--blue-light);
+  background: var(--white);
   border-radius: 16px;
   padding: 32px 40px;
   display: flex;
   align-items: center;
   gap: 40px;
   flex-wrap: wrap;
-  border: 1px solid rgba(48, 127, 226, 0.2);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px -8px rgba(17, 24, 39, 0.1);
 }
 @media (max-width: 640px) {
   .countdown-card {
@@ -1202,30 +1207,36 @@ a { color: var(--blue); }
 .why-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 48px;
+  gap: 20px;
   margin-top: 40px;
 }
 @media (max-width: 768px) {
-  .why-grid { grid-template-columns: 1fr; gap: 36px; }
+  .why-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
+.why-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r12);
+  padding: 28px 24px;
+}
 .why-item__rule {
   display: block;
-  width: 32px;
+  width: 28px;
   height: 2px;
   background: var(--blue);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 .why-item__title {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
 .why-item__body {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 300;
   color: var(--body);
   line-height: 1.7;
@@ -1239,15 +1250,22 @@ a { color: var(--blue); }
   list-style: none;
   padding: 0;
   margin: 32px 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .benefit-list { grid-template-columns: 1fr; gap: 16px; }
 }
 .benefit-item {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r12);
 }
-.benefit-item:first-child { border-top: 1px solid var(--border); }
 .benefit-item__icon {
   width: 36px;
   height: 36px;
@@ -1257,7 +1275,6 @@ a { color: var(--blue); }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 1px;
   color: var(--blue);
 }
 .benefit-item__title {
