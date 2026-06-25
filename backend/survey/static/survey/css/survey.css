@@ -1022,18 +1022,22 @@ a { color: var(--blue); }
    ========================================================= */
 .landing-hero {
   background: var(--blue-light);
+  min-height: 80vh;
   padding: 72px 24px 120px;
+  display: flex;
+  align-items: center;
 }
 @media (max-width: 640px) {
-  .landing-hero { padding: 48px 20px 88px; }
+  .landing-hero { min-height: 0; padding: 48px 20px 88px; }
 }
 
 .landing-hero__inner {
+  width: 100%;
   max-width: 1080px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 56px;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 48px;
   align-items: center;
 }
 @media (max-width: 860px) {
