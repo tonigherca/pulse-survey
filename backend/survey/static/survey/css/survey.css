@@ -1112,21 +1112,38 @@ a { color: var(--blue); }
 .landing-inner--narrow { max-width: 560px; margin: 0 auto; }
 
 /* =========================================================
-   Trust strip — S2
+   Trust strip
    ========================================================= */
 .trust-strip {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 12px 24px;
-  text-align: center;
 }
-.trust-strip__text {
+.trust-strip__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.trust-strip__item {
+  display: inline-flex;
+  align-items: center;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 0;
+  white-space: nowrap;
+}
+.trust-strip__dot {
+  font-size: 11px;
+  color: var(--border);
+  user-select: none;
+}
+@media (max-width: 600px) {
+  .trust-strip__dot { display: none; }
+  .trust-strip__inner { flex-direction: column; align-items: center; gap: 10px; }
 }
 
 /* =========================================================
@@ -1157,63 +1174,6 @@ a { color: var(--blue); }
 }
 .editorial-prose p:last-child { margin: 0; }
 
-/* =========================================================
-   Response counter — S4
-   ========================================================= */
-.response-counter {
-  margin: 32px 0 24px;
-  max-width: 480px;
-}
-.response-counter__stat {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin: 0 0 10px;
-  flex-wrap: wrap;
-}
-.response-counter__number {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 4.5vw, 56px);
-  font-weight: 600;
-  color: var(--blue);
-  line-height: 1;
-}
-.response-counter__label {
-  font-size: 15px;
-  font-weight: 300;
-  color: var(--body);
-}
-.response-counter__bar-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.response-counter__bar-track {
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.response-counter__bar-fill {
-  height: 100%;
-  background: var(--blue);
-  border-radius: 2px;
-  transition: width 0.6s ease-out;
-}
-.response-counter__target {
-  text-align: right;
-  color: var(--muted);
-}
-
-/* =========================================================
-   Countdown inline — S4
-   ========================================================= */
-.countdown-inline {
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--muted);
-  margin: 0 0 28px;
-}
 
 /* =========================================================
    Landing credibility footer
@@ -1226,7 +1186,7 @@ a { color: var(--blue); }
 }
 
 /* =========================================================
-   Role cards — text-only, 5 columns
+   Role cards — action button treatment, 5 columns
    ========================================================= */
 .role-grid {
   display: grid;
@@ -1242,37 +1202,55 @@ a { color: var(--blue); }
 }
 
 .role-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 20px 16px;
+  padding: 24px 40px 24px 24px;
   border: 1.5px solid var(--border);
   border-radius: var(--r12);
   text-decoration: none;
   color: var(--ink);
   background: var(--white);
-  transition: border-color 0.15s, background 0.15s;
-  min-height: 72px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
 }
 .role-card:hover {
   border-color: var(--blue);
-  background: var(--blue-light);
+  box-shadow: 0 2px 12px rgba(48, 127, 226, 0.12);
 }
 .role-card:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
+.role-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .role-card__title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
-  color: var(--ink);
+  color: #111827;
   line-height: 1.3;
 }
 .role-card__sub {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 300;
-  color: var(--muted);
+  color: #6B7280;
   line-height: 1.4;
+  margin-top: 4px;
+}
+.role-card__arrow {
+  position: absolute;
+  bottom: 20px;
+  right: 16px;
+  color: var(--blue);
+  font-size: 16px;
+  transition: transform 0.15s;
+}
+.role-card:hover .role-card__arrow {
+  transform: translateX(3px);
 }
 
 /* =========================================================

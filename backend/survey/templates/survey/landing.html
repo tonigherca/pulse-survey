@@ -18,21 +18,118 @@
         Pulsul Digital construiește această imagine.
       </p>
       <a href="#role-selector" class="landing-hero__cta">Participă la studiu</a>
+
+      <!-- Combined counter + countdown (Change 2 — hidden until count >= 50) -->
+      <div id="pulse-counter" style="margin-top: 32px; max-width: 480px; display: none;">
+
+        <p style="font-family: 'DM Sans', sans-serif; font-weight: 600;
+           font-size: 15px; color: #111827; margin: 0 0 10px;">
+          <span id="counter-number" style="font-family: 'Playfair Display', serif;
+            font-weight: 600; font-size: 32px; color: #307FE2;
+            margin-right: 6px;">—</span>
+          de răspunsuri înregistrate până acum
+        </p>
+
+        <div style="height: 6px; border-radius: 4px;
+             background-color: #E5E7EB; margin-bottom: 8px; overflow: hidden;">
+          <div id="counter-bar" role="progressbar"
+               style="width: 0%; height: 100%; background-color: #307FE2;
+                      border-radius: 4px; transition: width 0.6s ease;"
+               aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          </div>
+        </div>
+
+        <p style="font-family: 'DM Sans', sans-serif; font-weight: 300;
+           font-size: 13px; color: #6B7280; margin: 0;">
+          <span id="counter-target-label"
+                style="font-weight: 600; color: #374151;">OBIECTIV: 300</span>
+          &nbsp;·&nbsp;
+          <span id="countdown-days"></span>
+          &nbsp;·&nbsp;Colectarea se încheie pe 31 august 2026
+        </p>
+
+      </div>
     </div>
 
     <figure class="landing-hero__figure" aria-hidden="true">
-      <img src="{% static 'survey/images/hero.png' %}" alt="" class="landing-hero__img">
+      <img src="{% static 'survey/images/hero2.jpg' %}" alt="" class="landing-hero__img">
     </figure>
 
   </div>
 </section>
 
-<!-- ── S2 TRUST STRIP ─────────────────────────────────────── -->
+<!-- ── S2 ROLE SELECTOR ───────────────────────────────────── -->
+<section class="landing-section role-entry" id="role-selector" aria-labelledby="role-heading">
+  <div class="landing-inner">
+
+    <span class="survey-label-sc">Începe studiul</span>
+    <h2 class="survey-heading" id="role-heading" style="margin-top:4px;">Care e rolul tău?</h2>
+    <p class="role-sub">
+      Alege rolul pe care îl ocupi cel mai mult timp. Vei răspunde la un
+      set de întrebări adaptat, în aproximativ 8 până la 12 minute.
+      Răspunsurile sunt complet anonime. Nu colectăm numele tău, numele
+      instituției sau alte date de identificare.
+    </p>
+
+    <nav class="role-grid" aria-label="Alege rolul și pornește studiul">
+      {% for opt in q0_options %}
+      <a href="{% url 'survey:runner' %}?path={{ opt.path }}" class="role-card">
+        <div class="role-card__content">
+          {% if opt.path == 'director' %}
+            <span class="role-card__title">Director</span>
+            <span class="role-card__sub">Director adjunct</span>
+          {% elif opt.path == 'teacher' %}
+            <span class="role-card__title">Profesor</span>
+          {% elif opt.path == 'secretariat' %}
+            <span class="role-card__title">Personal administrativ</span>
+            <span class="role-card__sub">Secretar, administrator, personal auxiliar</span>
+          {% elif opt.path == 'parent' %}
+            <span class="role-card__title">Părinte</span>
+          {% elif opt.path == 'inspector' %}
+            <span class="role-card__title">Inspector ISJ</span>
+            <span class="role-card__sub">Reprezentant autoritate educațională</span>
+          {% else %}
+            <span class="role-card__title">{{ opt.label }}</span>
+          {% endif %}
+        </div>
+        <span class="role-card__arrow" aria-hidden="true">→</span>
+      </a>
+      {% endfor %}
+    </nav>
+
+  </div>
+</section>
+
+<!-- ── S3 TRUST STRIP ─────────────────────────────────────── -->
 <div class="trust-strip" role="complementary" aria-label="Credibilitate studiu">
-  <p class="trust-strip__text">Răspunsuri complet anonime · Realizat de echipa Edus · Rezultate publicate pe edus.ro</p>
+  <div class="trust-strip__inner">
+    <span class="trust-strip__item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#307FE2"
+           style="flex-shrink:0;margin-right:6px;vertical-align:middle;" aria-hidden="true">
+        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+      </svg>
+      Răspunsuri complet anonime
+    </span>
+    <span class="trust-strip__dot" aria-hidden="true">·</span>
+    <span class="trust-strip__item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#307FE2"
+           style="flex-shrink:0;margin-right:6px;vertical-align:middle;" aria-hidden="true">
+        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+      </svg>
+      Realizat de echipa Edus
+    </span>
+    <span class="trust-strip__dot" aria-hidden="true">·</span>
+    <span class="trust-strip__item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#307FE2"
+           style="flex-shrink:0;margin-right:6px;vertical-align:middle;" aria-hidden="true">
+        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+      </svg>
+      Rezultate publicate pe edus.ro
+    </span>
+  </div>
 </div>
 
-<!-- ── S3 EDITORIAL BLOCK ─────────────────────────────────── -->
+<!-- ── S4 EDITORIAL BLOCK ─────────────────────────────────── -->
 <section class="landing-section editorial-section" aria-labelledby="editorial-heading">
   <div class="landing-inner--mid">
     <hr class="editorial-rule" aria-hidden="true">
@@ -46,63 +143,6 @@
          inspectori. Fiecare vede o altă față a aceleiași realități.</p>
       <p>Rezultatele vor fi publicate integral pe edus.ro, fără restricții de acces.</p>
     </div>
-  </div>
-</section>
-
-<!-- ── S4 ROLE ENTRY ──────────────────────────────────────── -->
-<section class="landing-section role-entry" id="role-selector" aria-labelledby="role-heading">
-  <div class="landing-inner">
-
-    <span class="survey-label-sc">Începe studiul</span>
-    <h2 class="survey-heading" id="role-heading" style="margin-top:4px;">Care e rolul tău?</h2>
-
-    <!-- Live response counter -->
-    <div class="response-counter" id="response-counter" aria-live="polite" aria-atomic="true">
-      <p class="response-counter__stat">
-        <strong class="response-counter__number" id="counter-number">—</strong>
-        <span class="response-counter__label"> de răspunsuri înregistrate până acum</span>
-      </p>
-      <div class="response-counter__bar-wrap" id="counter-bar-wrap">
-        <div class="response-counter__bar-track">
-          <div class="response-counter__bar-fill" id="counter-bar" style="width:0%"></div>
-        </div>
-        <span class="response-counter__target survey-label-sc" id="counter-target"></span>
-      </div>
-    </div>
-
-    <p class="role-sub">
-      Alege rolul pe care îl ocupi cel mai mult timp. Vei răspunde la un
-      set de întrebări adaptat, în aproximativ 8 până la 12 minute.
-      Răspunsurile sunt complet anonime. Nu colectăm numele tău, numele
-      instituției sau alte date de identificare.
-    </p>
-
-    {% if is_y1 %}
-    <p class="countdown-inline">
-      Colectarea răspunsurilor se încheie pe 31 august 2026. Mai sunt {{ days_remaining }} zile.
-    </p>
-    {% else %}
-    <p class="countdown-inline">
-      Colectarea răspunsurilor pentru ediția 2026 s-a încheiat.
-      Raportul va fi publicat pe edus.ro.
-    </p>
-    {% endif %}
-
-    <nav class="role-grid" aria-label="Alege rolul și pornește studiul">
-      {% for opt in q0_options %}
-      <a href="{% url 'survey:runner' %}?path={{ opt.path }}" class="role-card">
-        <span class="role-card__title">{{ opt.label }}</span>
-        {% if opt.path == 'director' %}
-        <span class="role-card__sub">Director adjunct</span>
-        {% elif opt.path == 'secretariat' %}
-        <span class="role-card__sub">Secretar, administrator, personal auxiliar</span>
-        {% elif opt.path == 'inspector' %}
-        <span class="role-card__sub">Reprezentant autoritate educațională</span>
-        {% endif %}
-      </a>
-      {% endfor %}
-    </nav>
-
   </div>
 </section>
 
@@ -120,50 +160,76 @@
 
 <script>
 (function () {
-  var countUrl = '{% url "survey:count" %}';
-  var prevCount = null;
+  var THRESHOLD = 50;
+  var CUTOFF = new Date('2026-08-31T23:59:59');
 
-  function applyCount(data) {
-    var numEl = document.getElementById('counter-number');
-    var barEl = document.getElementById('counter-bar');
-    var wrapEl = document.getElementById('counter-bar-wrap');
-    var targetEl = document.getElementById('counter-target');
-    if (!numEl) return;
-
-    var n = data.count;
-    var crossed = prevCount !== null && prevCount < data.target && n >= data.target;
-    prevCount = n;
-
-    numEl.textContent = n.toLocaleString('ro-RO');
-
-    if (data.target === null) {
-      wrapEl.style.display = 'none';
-    } else {
-      wrapEl.style.display = '';
-      targetEl.textContent = 'Obiectiv: ' + data.target.toLocaleString('ro-RO');
-
-      if (crossed) {
-        barEl.style.width = '100%';
-        numEl.textContent = 'Obiectiv atins.';
-        setTimeout(function () {
-          numEl.textContent = n.toLocaleString('ro-RO');
-          barEl.style.width = data.percent + '%';
-        }, 2500);
-      } else {
-        barEl.style.width = data.percent + '%';
-      }
-    }
+  function getDaysRemaining() {
+    var diff = CUTOFF - new Date();
+    if (diff <= 0) return 0;
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
 
-  function fetchCount() {
-    fetch(countUrl)
+  function getTarget(count) {
+    if (count < 300) return 300;
+    if (count < 500) return 500;
+    if (count < 1000) return 1000;
+    return null;
+  }
+
+  var previousTarget = null;
+
+  function fetchAndRender() {
+    fetch('/studiu/count')
       .then(function (r) { return r.json(); })
-      .then(applyCount)
+      .then(function (data) {
+        var count = data.count;
+        if (count < THRESHOLD) return;
+
+        var el = document.getElementById('pulse-counter');
+        if (!el) return;
+        el.style.display = 'block';
+
+        document.getElementById('counter-number').textContent =
+          count.toLocaleString('ro-RO');
+
+        var target = getTarget(count);
+        var bar = document.getElementById('counter-bar');
+        var targetLabel = document.getElementById('counter-target-label');
+
+        if (target) {
+          var percent = Math.min((count / target) * 100, 100);
+          if (previousTarget && target !== previousTarget) {
+            bar.style.width = '100%';
+            targetLabel.textContent = 'Obiectiv atins.';
+            setTimeout(function () {
+              bar.style.width = percent.toFixed(1) + '%';
+              targetLabel.textContent = 'OBIECTIV: ' + target.toLocaleString('ro-RO');
+            }, 2500);
+          } else {
+            bar.style.width = percent.toFixed(1) + '%';
+            targetLabel.textContent = 'OBIECTIV: ' + target.toLocaleString('ro-RO');
+          }
+          previousTarget = target;
+        } else {
+          bar.style.width = '100%';
+          targetLabel.textContent = '';
+        }
+
+        var days = getDaysRemaining();
+        var daysEl = document.getElementById('countdown-days');
+        if (daysEl) {
+          daysEl.textContent = days > 0 ? days + ' de zile rămase' : '';
+        }
+        if (days <= 0) {
+          var metaP = daysEl ? daysEl.closest('p') : null;
+          if (metaP) metaP.textContent = 'Colectarea răspunsurilor pentru ediția 2026 s-a încheiat.';
+        }
+      })
       .catch(function () {});
   }
 
-  fetchCount();
-  setInterval(fetchCount, 60000);
+  fetchAndRender();
+  setInterval(fetchAndRender, 60000);
 })();
 </script>
 
