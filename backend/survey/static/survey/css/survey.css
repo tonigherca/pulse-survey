@@ -1108,10 +1108,10 @@ a { color: var(--blue); }
    Landing page — shared section wrapper
    ========================================================= */
 .landing-section {
-  padding: 64px 24px;
+  padding: 56px 24px;
   border-bottom: 1px solid var(--border);
 }
-.landing-section--tight { padding: 48px 24px; }
+.landing-section--tight { padding: 40px 24px; }
 .landing-section--countdown {
   padding: 0 24px 56px;
   margin-top: -64px;
@@ -1300,4 +1300,107 @@ a { color: var(--blue); }
 }
 @media (max-width: 640px) {
   .landing-footer { padding: 32px 20px 48px; }
+}
+
+/* =========================================================
+   Blue-tinted section modifier
+   ========================================================= */
+.landing-section--blue {
+  background: var(--blue-light);
+  border-bottom: 1px solid rgba(48, 127, 226, 0.15);
+}
+.landing-section--blue .benefit-item {
+  background: var(--white);
+  border-color: rgba(48, 127, 226, 0.15);
+}
+
+/* =========================================================
+   Role cards — illustrated grid
+   ========================================================= */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+@media (max-width: 600px) {
+  .role-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r12);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: var(--white);
+}
+.role-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 4px 16px -4px rgba(48, 127, 226, 0.18);
+}
+
+.role-card__thumb {
+  background: var(--blue-light);
+  padding: 28px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+}
+.role-card__body {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+}
+.role-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.35;
+}
+.role-card__arrow {
+  color: var(--blue);
+  font-size: 15px;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.role-card:hover .role-card__arrow {
+  transform: translateX(3px);
+}
+
+/* =========================================================
+   Runner — section-mode question blocks
+   ========================================================= */
+.q-block {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 36px;
+  margin-bottom: 36px;
+}
+.q-block:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.q-block--hidden {
+  display: none;
+}
+
+/* Likert mobile: all rows stacked (no more one-at-a-time) */
+.likert-row-group {
+  margin-bottom: 20px;
+}
+.likert-row-group:last-child { margin-bottom: 0; }
+.likert-row-group__label {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.45;
+  margin-bottom: 10px;
 }

@@ -1,9 +1,12 @@
 /* Survey runner — vanilla JS, no dependencies.
  *
- * Reads data-* attributes from #runner for all URLs so nothing is hardcoded.
- * S.cur is always an index into S.questions (the FULL ordered array).
- * S.skipped is a Set of question IDs; navigation skips over them.
- * S.history stores full-array indices for back-navigation.
+ * Navigation unit: SECTION (all questions in a section shown at once).
+ * S.sections[]   — [{title, questions[]}] — primary navigation
+ * S.questions[]  — flat array — kept for branch/submit compatibility
+ * S.curSection   — index into S.sections
+ * S.skipped      — Set of question IDs hidden by branch rules
+ * S.answers      — {qid: value}
+ * S.history      — stack of section indices for back navigation
  */
 (function () {
   'use strict';
@@ -15,12 +18,12 @@
     path:       null,
     responseId: null,
     cat:        null,
-    questions:  [],     // flat ordered array, each q has .sectionTitle
+    sections:   [],   // [{title, questions:[...]}]
+    questions:  [],   // flat (branch + submit compat)
     skipped:    new Set(),
-    answers:    {},     // { qid: value } — value types vary by question type
-    cur:        0,      // index into S.questions
-    history:    [],     // stack of S.questions indices for back-nav
-    gridRowIdx: 0,      // current row when iterating a likert_grid on mobile
+    answers:    {},
+    curSection: 0,
+    history:    [],
     submitting: false,
   };
 
@@ -36,21 +39,33 @@
     S.path = el.dataset.path;
 
     try {
-      S.cat = await fetchJSON(el.dataset.catalogueUrl);
+      S.cat       = await fetchJSON(el.dataset.catalogueUrl);
+      S.sections  = buildSections(S.cat, S.path);
       S.questions = buildQueue(S.cat, S.path);
 
-      const res = await postJSON(el.dataset.startUrl, { path: S.path });
+      const res    = await postJSON(el.dataset.startUrl, { path: S.path });
       S.responseId = res.response_id;
 
-      showQuestion();
+      showSection();
     } catch (e) {
-      showError(e.message || 'A apărut o eroare. Vă rugăm reîncărcați pagina.');
+      showError(e.message || 'A apărut o eroare. Reîncărcați pagina.');
     }
   });
 
   // =========================================================
   // CATALOGUE HELPERS
   // =========================================================
+  function buildSections(cat, path) {
+    return cat.paths[path].sections.map(function (sec) {
+      return {
+        title: sec.title,
+        questions: sec.questions.map(function (q) {
+          return Object.assign({}, q, { sectionTitle: sec.title });
+        }),
+      };
+    });
+  }
+
   function buildQueue(cat, path) {
     const qs = [];
     for (const sec of cat.paths[path].sections) {
@@ -105,60 +120,95 @@
   // =========================================================
   // PROGRESS
   // =========================================================
+  function getVisibleSections() {
+    return S.sections.filter(function (sec) {
+      return sec.questions.some(function (q) { return !S.skipped.has(q.id); });
+    });
+  }
+
   function progressInfo() {
-    const q = S.questions[S.cur];
-    if (!q) return null;
-
-    const visible = S.questions.filter(function (vq) { return !S.skipped.has(vq.id); });
-    const totalVis = visible.length;
-    const posVis = visible.findIndex(function (vq) { return vq.id === q.id; }) + 1;
-
-    const secVis = visible.filter(function (vq) { return vq.sectionTitle === q.sectionTitle; });
-    const secPos = secVis.findIndex(function (vq) { return vq.id === q.id; }) + 1;
-    const secTotal = secVis.length;
+    const vis    = getVisibleSections();
+    const cur    = S.sections[S.curSection];
+    const posVis = vis.indexOf(cur) + 1;
+    const total  = vis.length;
 
     const TIME = { single_select: 25, multi_select: 35, likert_grid: 75, ranking: 90, free_text: 120 };
-    const remaining = visible.slice(posVis - 1);
-    const secs = remaining.reduce(function (s, rq) { return s + (TIME[rq.type] || 30); }, 0);
+    const remaining = S.sections.slice(S.curSection).reduce(function (acc, sec) {
+      return acc.concat(sec.questions.filter(function (q) { return !S.skipped.has(q.id); }));
+    }, []);
+    const secs = remaining.reduce(function (s, q) { return s + (TIME[q.type] || 30); }, 0);
     const mins = Math.max(1, Math.ceil(secs / 60));
 
-    return { q: q, totalVis: totalVis, posVis: posVis, secPos: secPos, secTotal: secTotal, mins: mins };
+    return { sectionTitle: cur ? cur.title : '', posVis: posVis, total: total, mins: mins };
+  }
+
+  function updateHeader() {
+    const info   = progressInfo();
+    const secEl  = document.getElementById('runner-section');
+    const stepEl = document.getElementById('runner-step');
+    const barEl  = document.getElementById('runner-bar');
+    const timeEl = document.getElementById('runner-time');
+
+    if (secEl)  secEl.textContent  = info.sectionTitle;
+    if (stepEl) stepEl.textContent = info.posVis + ' din ' + info.total;
+    if (barEl) {
+      const pct = Math.round((info.posVis / info.total) * 100);
+      barEl.style.width = pct + '%';
+      barEl.closest('[role=progressbar]').setAttribute('aria-valuenow', pct);
+    }
+    if (timeEl) timeEl.textContent = '~' + info.mins + ' minute rămase';
   }
 
   // =========================================================
-  // MAIN RENDER
+  // SECTION RENDER
   // =========================================================
-  function showQuestion() {
-    if (S.cur >= S.questions.length) {
+  function showSection() {
+    if (S.curSection >= S.sections.length) {
       doSubmit();
       return;
     }
 
-    const q = S.questions[S.cur];
-    S.gridRowIdx = 0;
-
-    const info = progressInfo();
-    if (info) {
-      document.getElementById('runner-section').textContent = info.q.sectionTitle;
-      document.getElementById('runner-step').textContent = info.posVis + ' din ' + info.totalVis;
-      const pct = Math.round((info.posVis / info.totalVis) * 100);
-      const bar = document.getElementById('runner-bar');
-      if (bar) {
-        bar.style.width = pct + '%';
-        bar.closest('[role=progressbar]').setAttribute('aria-valuenow', pct);
-      }
-      document.getElementById('runner-time').textContent = '~' + info.mins + ' minute rămase';
-    }
-
-    document.getElementById('question-area').innerHTML = renderQ(q);
-    attachHandlers(q);
-    updateNextBtn(q);
+    updateHeader();
 
     const backBtn = document.getElementById('btn-back');
     if (backBtn) backBtn.style.visibility = S.history.length > 0 ? 'visible' : 'hidden';
 
+    renderSection(S.sections[S.curSection]);
+
     const body = document.getElementById('runner-body');
     if (body) body.scrollTop = 0;
+  }
+
+  function renderSection(sec) {
+    const area = document.getElementById('question-area');
+    let html = '';
+    for (const q of sec.questions) {
+      const hidden = S.skipped.has(q.id);
+      html += '<div class="q-block' + (hidden ? ' q-block--hidden' : '') +
+              '" data-qid="' + escAttr(q.id) + '">';
+      html += renderQ(q);
+      html += '</div>';
+    }
+    area.innerHTML = html;
+
+    for (const q of sec.questions) {
+      attachHandlers(q);
+    }
+
+    updateSectionBtn();
+  }
+
+  // After each answer: sync hidden/visible q-blocks in current section
+  function refreshSkips() {
+    const area = document.getElementById('question-area');
+    if (!area) return;
+    const sec = S.sections[S.curSection];
+    for (const q of sec.questions) {
+      const block = area.querySelector('[data-qid="' + q.id + '"]');
+      if (!block) continue;
+      block.classList.toggle('q-block--hidden', S.skipped.has(q.id));
+    }
+    updateSectionBtn();
   }
 
   // =========================================================
@@ -212,11 +262,11 @@
   // MULTI SELECT
   // =========================================================
   function renderMulti(q, ans) {
-    const opts = getOptions(q);
+    const opts    = getOptions(q);
     const checked = Array.isArray(ans) ? ans : [];
-    const excl = q.exclusive_option || null;
+    const excl    = q.exclusive_option || null;
     let html = '<div class="check-list" role="group" aria-label="' + escAttr(q.text) + '">';
-    html += '<p class="q-helper">Selectați tot ce se aplică.</p>';
+    html += '<p class="q-helper">Selectează tot ce se aplică.</p>';
     for (const opt of opts) {
       const isChecked = checked.indexOf(opt.key) !== -1;
       html += '<button type="button"' +
@@ -244,7 +294,6 @@
     if (scaleLabel) html += '<p class="q-helper">' + esc(scaleLabel) + '</p>';
     html += '<div class="likert-table" role="group" aria-label="' + escAttr(q.text) + '">';
 
-    // Header
     html += '<div class="likert-header" aria-hidden="true">';
     html += '<div class="likert-header__label"></div>';
     html += '<div class="likert-header__scale">';
@@ -253,7 +302,6 @@
     }
     html += '</div></div>';
 
-    // Rows
     for (const row of q.rows) {
       const rowAns = ansObj[row.key];
       html += '<div class="likert-row">';
@@ -278,29 +326,35 @@
   }
 
   // =========================================================
-  // LIKERT GRID — mobile (one row at a time)
+  // LIKERT GRID — mobile (all rows stacked, scale cards per row)
   // =========================================================
   function renderLikertMobile(q, ans) {
-    const points = getScalePoints(q);
-    const ansObj = (ans && typeof ans === 'object' && !Array.isArray(ans)) ? ans : {};
-    const row = q.rows[S.gridRowIdx];
-    const rowAns = ansObj[row.key];
+    const points     = getScalePoints(q);
+    const ansObj     = (ans && typeof ans === 'object' && !Array.isArray(ans)) ? ans : {};
+    const scaleLabel = getScaleLabel(q);
 
     let html = '<div class="likert-mobile-wrap">';
-    html += '<p class="q-helper">Rândul ' + (S.gridRowIdx + 1) + ' din ' + q.rows.length + '</p>';
-    html += '<div class="likert-row-label">' + esc(row.label) + '</div>';
-    html += '<div class="likert-scale-cards" role="radiogroup" aria-label="' + escAttr(row.label) + '">';
-    for (const pt of points) {
-      const sel = rowAns === pt.key;
-      html += '<button type="button"' +
-        ' class="scale-card' + (sel ? ' is-selected' : '') + '"' +
-        ' data-qid="' + escAttr(q.id) + '"' +
-        ' data-row="' + escAttr(row.key) + '"' +
-        ' data-val="' + escAttr(pt.key) + '"' +
-        ' aria-pressed="' + sel + '"' +
-        '>' + esc(pt.label) + '</button>';
+    if (scaleLabel) html += '<p class="q-helper">' + esc(scaleLabel) + '</p>';
+
+    for (const row of q.rows) {
+      const rowAns = ansObj[row.key];
+      html += '<div class="likert-row-group">';
+      html += '<div class="likert-row-group__label">' + esc(row.label) + '</div>';
+      html += '<div class="likert-scale-cards" role="radiogroup" aria-label="' + escAttr(row.label) + '">';
+      for (const pt of points) {
+        const sel = rowAns === pt.key;
+        html += '<button type="button"' +
+          ' class="scale-card' + (sel ? ' is-selected' : '') + '"' +
+          ' data-qid="' + escAttr(q.id) + '"' +
+          ' data-row="' + escAttr(row.key) + '"' +
+          ' data-val="' + escAttr(pt.key) + '"' +
+          ' aria-pressed="' + sel + '"' +
+          '>' + esc(pt.label) + '</button>';
+      }
+      html += '</div></div>';
     }
-    html += '</div></div>';
+
+    html += '</div>';
     return html;
   }
 
@@ -308,11 +362,10 @@
   // RANKING
   // =========================================================
   function renderRanking(q, ans) {
-    const opts = q.options || [];
+    const opts         = q.options || [];
     const defaultOrder = opts.map(function (o) { return o.key; });
-    const order = Array.isArray(ans) ? ans : defaultOrder;
-    // Build display order (follow saved order, append any missing)
-    const ordered = order
+    const order        = Array.isArray(ans) ? ans : defaultOrder;
+    const ordered      = order
       .map(function (key) { return opts.find(function (o) { return o.key === key; }); })
       .filter(Boolean);
     for (const o of opts) {
@@ -320,7 +373,7 @@
     }
 
     let html = '<div class="rank-list" id="rank-list-' + escAttr(q.id) + '" data-qid="' + escAttr(q.id) + '">';
-    html += '<p class="q-helper">Trageți pentru a reordona sau folosiți butoanele ↑ ↓.</p>';
+    html += '<p class="q-helper">Trage pentru a reordona sau folosește butoanele ↑ ↓.</p>';
     for (let i = 0; i < ordered.length; i++) {
       const item = ordered[i];
       html += '<div class="rank-item" draggable="true" data-key="' + escAttr(item.key) + '" data-idx="' + i + '">' +
@@ -348,8 +401,8 @@
       ' class="freetext-area"' +
       ' data-qid="' + escAttr(q.id) + '"' +
       ' maxlength="' + max + '"' +
-      ' rows="5"' +
-      ' placeholder="Răspunsul dumneavoastră (opțional)"' +
+      ' rows="4"' +
+      ' placeholder="Răspunsul tău (opțional)"' +
       '>' + esc(val) + '</textarea>';
     html += '<div class="freetext-counter"><span id="ft-count-' + escAttr(q.id) + '">' + val.length + '</span> / ' + max + '</div>';
     html += '</div>';
@@ -357,18 +410,20 @@
   }
 
   // =========================================================
-  // EVENT HANDLERS (wired after each render)
+  // EVENT HANDLERS — scoped to each q-block
   // =========================================================
   function attachHandlers(q) {
-    const area = document.getElementById('question-area');
+    const area  = document.getElementById('question-area');
+    const block = area ? area.querySelector('[data-qid="' + q.id + '"]') : null;
+    if (!block) return;
 
     // Single select
-    area.querySelectorAll('.radio-opt').forEach(function (btn) {
+    block.querySelectorAll('.radio-opt').forEach(function (btn) {
       btn.addEventListener('click', function () {
         const val = btn.dataset.val;
         S.answers[q.id] = val;
 
-        area.querySelectorAll('.radio-opt').forEach(function (b) {
+        block.querySelectorAll('.radio-opt').forEach(function (b) {
           const sel = b.dataset.val === val;
           b.classList.toggle('is-selected', sel);
           b.setAttribute('aria-checked', sel);
@@ -376,14 +431,14 @@
 
         applyBranch();
         saveAnswer(q.id, val);
-        updateNextBtn(q);
+        refreshSkips();
       });
     });
 
     // Multi select
-    area.querySelectorAll('.check-opt').forEach(function (btn) {
+    block.querySelectorAll('.check-opt').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        const val = btn.dataset.val;
+        const val  = btn.dataset.val;
         const excl = q.exclusive_option || null;
         let current = Array.isArray(S.answers[q.id]) ? S.answers[q.id].slice() : [];
 
@@ -400,7 +455,7 @@
 
         S.answers[q.id] = current;
 
-        area.querySelectorAll('.check-opt').forEach(function (b) {
+        block.querySelectorAll('.check-opt').forEach(function (b) {
           const isChecked = current.indexOf(b.dataset.val) !== -1;
           b.classList.toggle('is-checked', isChecked);
           b.setAttribute('aria-pressed', isChecked);
@@ -408,68 +463,70 @@
 
         applyBranch();
         saveAnswer(q.id, current);
-        updateNextBtn(q);
+        refreshSkips();
       });
     });
 
     // Likert desktop — scale buttons
-    area.querySelectorAll('.scale-btn').forEach(function (btn) {
+    block.querySelectorAll('.scale-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         const rowKey = btn.dataset.row;
-        const val = btn.dataset.val;
+        const val    = btn.dataset.val;
 
         if (!S.answers[q.id] || typeof S.answers[q.id] !== 'object' || Array.isArray(S.answers[q.id])) {
           S.answers[q.id] = {};
         }
         S.answers[q.id][rowKey] = val;
 
-        area.querySelectorAll('.scale-btn[data-row="' + rowKey + '"]').forEach(function (b) {
+        block.querySelectorAll('.scale-btn[data-row="' + rowKey + '"]').forEach(function (b) {
           const sel = b.dataset.val === val;
           b.classList.toggle('is-selected', sel);
           b.setAttribute('aria-pressed', sel);
         });
 
         saveAnswer(q.id + '.' + rowKey, val);
-        updateNextBtn(q);
+        updateSectionBtn();
       });
     });
 
-    // Likert mobile — scale cards (one row at a time)
-    area.querySelectorAll('.scale-card').forEach(function (btn) {
+    // Likert mobile — scale cards (all rows, highlight within row group only)
+    block.querySelectorAll('.scale-card').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        const rowKey = btn.dataset.row;
-        const val = btn.dataset.val;
+        const rowKey   = btn.dataset.row;
+        const val      = btn.dataset.val;
 
         if (!S.answers[q.id] || typeof S.answers[q.id] !== 'object' || Array.isArray(S.answers[q.id])) {
           S.answers[q.id] = {};
         }
         S.answers[q.id][rowKey] = val;
 
-        area.querySelectorAll('.scale-card').forEach(function (b) {
-          const sel = b.dataset.val === val;
-          b.classList.toggle('is-selected', sel);
-          b.setAttribute('aria-pressed', sel);
-        });
+        const rowGroup = btn.closest('.likert-row-group');
+        if (rowGroup) {
+          rowGroup.querySelectorAll('.scale-card').forEach(function (b) {
+            const sel = b.dataset.val === val;
+            b.classList.toggle('is-selected', sel);
+            b.setAttribute('aria-pressed', sel);
+          });
+        }
 
         saveAnswer(q.id + '.' + rowKey, val);
-
-        // Auto-advance to next row after brief feedback delay
-        setTimeout(function () { advanceGridRow(q); }, 280);
+        updateSectionBtn();
       });
     });
 
     // Ranking
-    const rankList = area.querySelector('.rank-list');
+    const rankList = block.querySelector('.rank-list');
     if (rankList) attachRankHandlers(q, rankList);
 
     // Free text
-    const textarea = area.querySelector('.freetext-area');
+    const textarea = block.querySelector('.freetext-area');
     if (textarea) {
       textarea.addEventListener('input', function () {
         const val = textarea.value;
         S.answers[q.id] = val;
-        const counter = area.querySelector('#ft-count-' + q.id);
+        const counter = block.querySelector('#ft-count-' + q.id);
         if (counter) counter.textContent = val.length;
+        updateSectionBtn();
       });
     }
   }
@@ -478,15 +535,11 @@
   // RANKING HANDLERS
   // =========================================================
   function attachRankHandlers(q, listEl) {
-    // Up/down buttons
     listEl.querySelectorAll('.rank-btn--up').forEach(function (btn) {
       btn.addEventListener('click', function () {
         const item = btn.closest('.rank-item');
         const prev = item.previousElementSibling;
-        if (prev) {
-          listEl.insertBefore(item, prev);
-          syncRankState(q, listEl);
-        }
+        if (prev) { listEl.insertBefore(item, prev); syncRankState(q, listEl); }
       });
     });
 
@@ -494,14 +547,10 @@
       btn.addEventListener('click', function () {
         const item = btn.closest('.rank-item');
         const next = item.nextElementSibling;
-        if (next) {
-          listEl.insertBefore(next, item);
-          syncRankState(q, listEl);
-        }
+        if (next) { listEl.insertBefore(next, item); syncRankState(q, listEl); }
       });
     });
 
-    // Drag-and-drop
     let dragSrc = null;
 
     listEl.querySelectorAll('.rank-item').forEach(function (item) {
@@ -510,32 +559,24 @@
         item.classList.add('is-dragging');
         e.dataTransfer.effectAllowed = 'move';
       });
-
       item.addEventListener('dragend', function () {
         item.classList.remove('is-dragging');
-        listEl.querySelectorAll('.rank-item').forEach(function (i) {
-          i.classList.remove('drag-over');
-        });
+        listEl.querySelectorAll('.rank-item').forEach(function (i) { i.classList.remove('drag-over'); });
         dragSrc = null;
         syncRankState(q, listEl);
       });
-
       item.addEventListener('dragover', function (e) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         if (!dragSrc || dragSrc === item) return;
         const rect = item.getBoundingClientRect();
-        const mid = rect.top + rect.height / 2;
-        if (e.clientY < mid) {
+        if (e.clientY < rect.top + rect.height / 2) {
           listEl.insertBefore(dragSrc, item);
         } else {
           listEl.insertBefore(dragSrc, item.nextSibling);
         }
       });
-
-      item.addEventListener('drop', function (e) {
-        e.preventDefault();
-      });
+      item.addEventListener('drop', function (e) { e.preventDefault(); });
     });
   }
 
@@ -547,16 +588,16 @@
     items.forEach(function (el, i) {
       el.querySelector('.rank-item__num').textContent = i + 1;
       el.dataset.idx = i;
-      el.querySelector('.rank-btn--up').disabled = i === 0;
+      el.querySelector('.rank-btn--up').disabled   = i === 0;
       el.querySelector('.rank-btn--down').disabled = i === items.length - 1;
     });
 
     saveAnswer(q.id, order);
-    updateNextBtn(q);
+    updateSectionBtn();
   }
 
   // =========================================================
-  // NEXT BUTTON STATE
+  // SECTION COMPLETION
   // =========================================================
   function isAnswered(q) {
     const ans = S.answers[q.id];
@@ -572,36 +613,27 @@
       case 'ranking':
         return Array.isArray(ans) && ans.length === (q.options || []).length;
       case 'free_text':
-        return true; // always optional
+        return true;
       default:
         return false;
     }
   }
 
-  function isCurrentGridRowAnswered(q) {
-    const ans = S.answers[q.id];
-    if (!ans || typeof ans !== 'object' || Array.isArray(ans)) return false;
-    return q.rows[S.gridRowIdx] && q.rows[S.gridRowIdx].key in ans;
+  function isSectionComplete() {
+    const sec = S.sections[S.curSection];
+    if (!sec) return false;
+    return sec.questions
+      .filter(function (q) { return !S.skipped.has(q.id); })
+      .every(function (q) { return isAnswered(q); });
   }
 
-  function updateNextBtn(q) {
+  function updateSectionBtn() {
     const btn = document.getElementById('btn-next');
-    if (!btn) return;
-
-    let enabled;
-    if (q.type === 'free_text') {
-      enabled = true;
-    } else if (q.type === 'likert_grid' && isMobileWidth()) {
-      enabled = isCurrentGridRowAnswered(q);
-    } else {
-      enabled = isAnswered(q);
-    }
-
-    btn.disabled = !enabled;
+    if (btn) btn.disabled = !isSectionComplete();
   }
 
   // =========================================================
-  // PERMANENT BUTTON WIRING (runs once on DOMContentLoaded)
+  // PERMANENT BUTTON WIRING
   // =========================================================
   function wirePermanentButtons() {
     const nextBtn = document.getElementById('btn-next');
@@ -610,14 +642,7 @@
     if (nextBtn) {
       nextBtn.addEventListener('click', function () {
         if (nextBtn.disabled) return;
-        const q = S.questions[S.cur];
-        if (!q) return;
-
-        if (q.type === 'likert_grid' && isMobileWidth()) {
-          advanceGridRow(q);
-        } else {
-          advance();
-        }
+        advance();
       });
     }
 
@@ -630,56 +655,31 @@
   // NAVIGATION
   // =========================================================
   function advance() {
-    S.history.push(S.cur);
-    S.cur++;
+    S.history.push(S.curSection);
+    S.curSection++;
 
-    // Skip over any newly-skipped questions
-    while (S.cur < S.questions.length && S.skipped.has(S.questions[S.cur].id)) {
-      S.cur++;
+    while (S.curSection < S.sections.length) {
+      const sec = S.sections[S.curSection];
+      if (sec.questions.some(function (q) { return !S.skipped.has(q.id); })) break;
+      S.curSection++;
     }
 
-    if (S.cur >= S.questions.length) {
+    if (S.curSection >= S.sections.length) {
       doSubmit();
       return;
     }
 
-    showQuestion();
-  }
-
-  function advanceGridRow(q) {
-    S.gridRowIdx++;
-    if (S.gridRowIdx < q.rows.length) {
-      // More rows in this grid — re-render for next row
-      document.getElementById('question-area').innerHTML = renderQ(q);
-      attachHandlers(q);
-      updateNextBtn(q);
-    } else {
-      // All rows answered — advance to next question
-      S.gridRowIdx = 0;
-      advance();
-    }
+    showSection();
   }
 
   function goBack() {
-    // On mobile likert: go back within grid rows first
-    const q = S.questions[S.cur];
-    if (q && q.type === 'likert_grid' && isMobileWidth() && S.gridRowIdx > 0) {
-      S.gridRowIdx--;
-      document.getElementById('question-area').innerHTML = renderQ(q);
-      attachHandlers(q);
-      updateNextBtn(q);
-      return;
-    }
-
     if (S.history.length === 0) return;
-    S.gridRowIdx = 0;
-    S.cur = S.history.pop();
+    S.curSection = S.history.pop();
 
-    // Restore back-button visibility
     const backBtn = document.getElementById('btn-back');
     if (backBtn) backBtn.style.visibility = S.history.length > 0 ? 'visible' : 'hidden';
 
-    showQuestion();
+    showSection();
   }
 
   // =========================================================
@@ -689,15 +689,11 @@
     if (S.submitting) return;
     S.submitting = true;
 
-    const el = document.getElementById('runner');
+    const el        = document.getElementById('runner');
     const submitUrl = el && el.dataset.submitUrl;
 
-    // Show a brief "saving" state in the footer
     const nextBtn = document.getElementById('btn-next');
-    if (nextBtn) {
-      nextBtn.disabled = true;
-      nextBtn.textContent = 'Se înregistrează…';
-    }
+    if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = 'Se înregistrează…'; }
 
     try {
       const res = await postJSON(submitUrl, { response_id: S.responseId });
@@ -708,7 +704,7 @@
       }
     } catch (e) {
       S.submitting = false;
-      showError('Nu am putut înregistra răspunsurile. Vă rugăm verificați conexiunea și reîncercați.');
+      showError('Nu am putut înregistra răspunsurile. Verifică conexiunea și reîncearcă.');
     }
   }
 
@@ -719,17 +715,15 @@
     const runner = document.getElementById('runner');
     if (!runner) return;
 
-    // Replace entire runner with done screen (removes sticky header/footer)
     runner.style.display = 'block';
     runner.innerHTML = doneScreenHTML();
 
-    // Wire email form
     const form = document.getElementById('email-form');
     if (form) {
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
         const emailInput = form.querySelector('input[type=email]');
-        const email = emailInput ? emailInput.value.trim() : '';
+        const email      = emailInput ? emailInput.value.trim() : '';
         if (!email) return;
 
         const submitBtn = form.querySelector('button[type=submit]');
@@ -739,11 +733,8 @@
         try {
           await postJSON(emailUrl, { email: email });
           const wrap = document.getElementById('email-wrap');
-          if (wrap) {
-            wrap.innerHTML = '<p style="font-size:15px;color:var(--muted);margin:0;">Veți primi raportul la adresa indicată. Vă mulțumim.</p>';
-          }
+          if (wrap) wrap.innerHTML = '<p style="font-size:15px;color:var(--muted);margin:0;">Vei primi raportul la adresa indicată. Mulțumim.</p>';
         } catch (_) {
-          // Silent — email is best-effort; the survey response is already saved
           if (submitBtn) submitBtn.disabled = false;
         }
       });
@@ -759,26 +750,26 @@
   }
 
   function doneScreenHTML() {
-    const runner = document.getElementById('runner');
+    const runner   = document.getElementById('runner');
     const emailUrl = runner ? runner.dataset.emailUrl : '';
 
     return '<div class="done-screen" data-email-url="' + escAttr(emailUrl) + '">' +
       '<div class="done-check" aria-hidden="true">✓</div>' +
-      '<h1 class="done-title">Vă mulțumim. Răspunsurile au fost înregistrate.</h1>' +
-      '<p class="done-body">Contribuția dumneavoastră ajută la construirea primei imagini de ansamblu ' +
+      '<h1 class="done-title">Mulțumim. Răspunsurile au fost înregistrate.</h1>' +
+      '<p class="done-body">Contribuția ta ajută la construirea primei imagini de ansamblu ' +
       'asupra digitalizării în școlile din România.</p>' +
       '<hr class="done-divider">' +
       '<div id="email-wrap">' +
-      '<p class="done-email-intro">Dacă doriți să primiți raportul complet în septembrie, ' +
-      'lăsați o adresă de email mai jos. Este opțional. Adresa este păstrată separat de ' +
-      'răspunsurile dumneavoastră, care rămân anonime.</p>' +
+      '<p class="done-email-intro">Dacă vrei să primești raportul complet în septembrie, ' +
+      'lasă o adresă de email mai jos. Este opțional. Adresa este păstrată separat de ' +
+      'răspunsurile tale, care rămân anonime.</p>' +
       '<form id="email-form" class="email-form" novalidate>' +
       '<label for="email-input" class="sr-only">Adresa de email</label>' +
       '<input type="email" id="email-input" name="email" ' +
         'placeholder="adresa@email.ro" autocomplete="email" class="email-input">' +
       '<input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off">' +
       '<div class="email-form__actions">' +
-        '<button type="submit" class="edus-button edus-button--primary">Trimiteți-mi raportul</button>' +
+        '<button type="submit" class="edus-button edus-button--primary">Trimite-mi raportul</button>' +
         '<button type="button" data-no-thanks class="done-link">Nu, mulțumesc</button>' +
       '</div>' +
       '</form>' +
@@ -795,7 +786,7 @@
     area.innerHTML =
       '<div class="error-screen">' +
       '<p>' + esc(msg) + '</p>' +
-      '<a href="." style="color:var(--blue);font-size:15px;font-weight:600;">Reîncărcați pagina</a>' +
+      '<a href="." style="color:var(--blue);font-size:15px;font-weight:600;">Reîncarcă pagina</a>' +
       '</div>';
   }
 
@@ -808,8 +799,8 @@
     postJSON(el.dataset.answerUrl, {
       response_id: S.responseId,
       question_id: questionId,
-      value: value,
-    }).catch(function () { /* answers are re-sent on final submit if needed */ });
+      value:       value,
+    }).catch(function () {});
   }
 
   async function fetchJSON(url) {
@@ -819,10 +810,10 @@
   }
 
   async function postJSON(url, data) {
-    const res = await fetch(url, {
-      method: 'POST',
+    const res  = await fetch(url, {
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body:    JSON.stringify(data),
     });
     const json = await res.json();
     if (!res.ok || !json.ok) throw new Error(json.error || 'HTTP ' + res.status);
@@ -846,5 +837,4 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-
-})();
+}());
