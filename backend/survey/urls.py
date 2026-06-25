@@ -16,4 +16,6 @@ urlpatterns = [
     path("api/submit",    views.submit,         name="submit"),
     # World-2 opt-in (spec §7: POST /studiu/email)
     path("email",         views.email_optin,    name="email"),
+    # Live response counter (spec §12: GET /studiu/count)
+    path("count",         views.count,          name="count"),
 ]

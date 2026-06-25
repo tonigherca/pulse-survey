@@ -1,7 +1,7 @@
 {% extends "survey/base.html" %}
 {% load static %}
 
-{% block title %}Starea Digitalizării în Școlile din România · Studiu Național 2026{% endblock %}
+{% block title %}Pulsul Digital · Studiu Național 2026{% endblock %}
 
 {% block body %}
 
@@ -11,13 +11,13 @@
 
     <div class="landing-hero__text">
       <span class="survey-overline">Studiu Național · Ediția 2026</span>
-      <h1 class="landing-hero__h1" id="hero-title">Starea digitalizării în școlile din România</h1>
+      <h1 class="landing-hero__h1" id="hero-title">Pulsul Digital</h1>
       <p class="landing-hero__sub">
-        Primul studiu dedicat exclusiv digitalizării învățământului preuniversitar românesc,
-        construit din experiența directă a celor care o trăiesc zilnic: directori, profesori,
-        secretariate, părinți și inspectori.
+        Ce se întâmplă efectiv cu digitalizarea în școlile din România nu a
+        fost niciodată măsurat din perspectiva celor implicați.
+        Pulsul Digital construiește această imagine.
       </p>
-      <a href="#incepe" class="landing-hero__cta">Participă la studiu</a>
+      <a href="#role-selector" class="landing-hero__cta">Participă la studiu</a>
     </div>
 
     <figure class="landing-hero__figure" aria-hidden="true">
@@ -27,229 +27,144 @@
   </div>
 </section>
 
-{% if is_y1 %}
-<!-- ── S2 COUNTDOWN ───────────────────────────────────────── -->
-<section class="landing-section--countdown" aria-label="Termen de colectare">
+<!-- ── S2 TRUST STRIP ─────────────────────────────────────── -->
+<div class="trust-strip" role="complementary" aria-label="Credibilitate studiu">
+  <p class="trust-strip__text">Răspunsuri complet anonime · Realizat de echipa Edus · Rezultate publicate pe edus.ro</p>
+</div>
+
+<!-- ── S3 EDITORIAL BLOCK ─────────────────────────────────── -->
+<section class="landing-section editorial-section" aria-labelledby="editorial-heading">
   <div class="landing-inner--mid">
-    <div class="countdown-card">
-
-      <div class="countdown-card__stat" aria-live="polite" aria-atomic="true">
-        <strong class="countdown-card__number" id="countdown-days">—</strong>
-        <span class="countdown-card__unit">zile rămase</span>
-      </div>
-
-      <div class="countdown-card__divider" aria-hidden="true"></div>
-
-      <div class="countdown-card__meta">
-        <p class="countdown-card__title">Colectarea răspunsurilor se închide pe 31 august 2026.</p>
-        <p class="countdown-card__sub">
-          Participă acum — răspunsurile înregistrate după această dată nu vor fi incluse în raportul ediției 2026.
-        </p>
-      </div>
-
-    </div>
-  </div>
-</section>
-{% endif %}
-
-<!-- ── S3 CE ESTE ─────────────────────────────────────────── -->
-<section class="landing-section" aria-labelledby="why-heading">
-  <div class="landing-inner">
-    <h2 class="survey-heading" id="why-heading">Primul audit onest al digitalizării în școlile din România. Tu îl faci posibil.</h2>
-    <p class="survey-body" style="max-width:640px;">
-      Nu există o imagine de ansamblu asupra digitalizării școlare în România.
-      Datele oficiale acoperă infrastructura, nu experiența reală. Acest studiu construiește
-      acea imagine, pornind de la cei care o trăiesc zilnic.
-    </p>
-
-    <div class="why-grid">
-
-      <article class="why-item">
-        <span class="why-item__rule" aria-hidden="true"></span>
-        <h3 class="why-item__title">Ce măsoară</h3>
-        <p class="why-item__body">
-          Infrastructura și echipamentele, platformele de management, instrumentele de predare,
-          competențele digitale ale personalului, modul în care conducerea folosește datele și
-          relația digitală cu autoritățile. Fiecare rol răspunde la întrebările relevante
-          pentru activitatea sa.
-        </p>
-      </article>
-
-      <article class="why-item">
-        <span class="why-item__rule" aria-hidden="true"></span>
-        <h3 class="why-item__title">De ce contează</h3>
-        <p class="why-item__body">
-          Politicile publice se scriu pe baza datelor disponibile. Fără o imagine reală,
-          deciziile de investiție și prioritizare rămân la nivel de percepție. Fiecare răspuns
-          adaugă greutate unui argument pe care niciun raport oficial nu îl poate construi singur.
-        </p>
-      </article>
-
-      <article class="why-item">
-        <span class="why-item__rule" aria-hidden="true"></span>
-        <h3 class="why-item__title">Cum participi</h3>
-        <p class="why-item__body">
-          Alege rolul tău din lista de mai jos. Studiul durează 8–12 minute,
-          funcționează pe orice telefon sau calculator, fără cont sau înregistrare.
-          Răspunsurile sunt complet anonime.
-        </p>
-      </article>
-
+    <hr class="editorial-rule" aria-hidden="true">
+    <h2 class="editorial-heading" id="editorial-heading">Imaginea care lipsește</h2>
+    <div class="editorial-prose">
+      <p>Datele publice despre digitalizarea școlară descriu infrastructura: câte
+         tablete achiziționate, câte platforme contractate. Experiența celor care le
+         folosesc zilnic rămâne nemăsurată.</p>
+      <p>Pulsul Digital construiește imaginea care lipsește, pornind de la cei care
+         știu cel mai bine: directori, profesori, personal administrativ, părinți și
+         inspectori. Fiecare vede o altă față a aceleiași realități.</p>
+      <p>Rezultatele vor fi publicate integral pe edus.ro, fără restricții de acces.</p>
     </div>
   </div>
 </section>
 
-<!-- ── S4 CE PRIMEȘTI ─────────────────────────────────────── -->
-<section class="landing-section landing-section--blue" aria-labelledby="benefits-heading">
+<!-- ── S4 ROLE ENTRY ──────────────────────────────────────── -->
+<section class="landing-section role-entry" id="role-selector" aria-labelledby="role-heading">
   <div class="landing-inner">
-    <h2 class="survey-heading" id="benefits-heading">Ce primești în schimb</h2>
 
-    <ul class="benefit-list" role="list">
+    <span class="survey-label-sc">Începe studiul</span>
+    <h2 class="survey-heading" id="role-heading" style="margin-top:4px;">Care e rolul tău?</h2>
 
-      <li class="benefit-item">
-        <span class="benefit-item__icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </span>
-        <p class="benefit-item__title">Raportul complet, în septembrie 2026</p>
-        <p class="benefit-item__body">
-          La final, poți lăsa o adresă de email pentru a primi raportul în momentul
-          publicării. Gratuit și public.
-        </p>
-      </li>
+    <!-- Live response counter -->
+    <div class="response-counter" id="response-counter" aria-live="polite" aria-atomic="true">
+      <p class="response-counter__stat">
+        <strong class="response-counter__number" id="counter-number">—</strong>
+        <span class="response-counter__label"> de răspunsuri înregistrate până acum</span>
+      </p>
+      <div class="response-counter__bar-wrap" id="counter-bar-wrap">
+        <div class="response-counter__bar-track">
+          <div class="response-counter__bar-fill" id="counter-bar" style="width:0%"></div>
+        </div>
+        <span class="response-counter__target survey-label-sc" id="counter-target"></span>
+      </div>
+    </div>
 
-      <li class="benefit-item">
-        <span class="benefit-item__icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </span>
-        <p class="benefit-item__title">Anonimat complet, garantat prin construcție</p>
-        <p class="benefit-item__body">
-          Nu colectăm numele tău, numele unității sau alte date de identificare.
-          Dacă alegi să primești raportul, adresa de email e păstrată separat de
-          răspunsuri și nu poate fi corelată cu acestea.
-        </p>
-      </li>
-
-      <li class="benefit-item">
-        <span class="benefit-item__icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </span>
-        <p class="benefit-item__title">Date publice, fără restricții de acces</p>
-        <p class="benefit-item__body">
-          Rezultatele agregate vor fi publicate deschis pe edus.ro. Nicio instituție nu va
-          putea fi identificată. Raportul va prezenta trenduri naționale și regionale,
-          nu situații individuale.
-        </p>
-      </li>
-
-    </ul>
-  </div>
-</section>
-
-<!-- ── S5 ROLE SELECTOR ───────────────────────────────────── -->
-<section class="landing-section" id="incepe" aria-labelledby="role-heading">
-  <div class="landing-inner">
-    <span class="survey-label-sc" id="role-heading">Începe studiul</span>
-    <h2 class="survey-heading" style="margin-top:4px;">Care e rolul tău?</h2>
-    <p class="role-sub" style="max-width:560px;">
-      Alege rolul pe care îl ocupi cel mai mult timp. Vei răspunde
-      la un set de întrebări adaptat, în aproximativ 8–12 minute.
+    <p class="role-sub">
+      Alege rolul pe care îl ocupi cel mai mult timp. Vei răspunde la un
+      set de întrebări adaptat, în aproximativ 8 până la 12 minute.
+      Răspunsurile sunt complet anonime. Nu colectăm numele tău, numele
+      instituției sau alte date de identificare.
     </p>
+
+    {% if is_y1 %}
+    <p class="countdown-inline">
+      Colectarea răspunsurilor se încheie pe 31 august 2026. Mai sunt {{ days_remaining }} zile.
+    </p>
+    {% else %}
+    <p class="countdown-inline">
+      Colectarea răspunsurilor pentru ediția 2026 s-a încheiat.
+      Raportul va fi publicat pe edus.ro.
+    </p>
+    {% endif %}
 
     <nav class="role-grid" aria-label="Alege rolul și pornește studiul">
       {% for opt in q0_options %}
       <a href="{% url 'survey:runner' %}?path={{ opt.path }}" class="role-card">
-        <div class="role-card__thumb" aria-hidden="true">
-          {% if opt.path == 'director' %}
-          <svg width="64" height="56" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="8" y="20" width="48" height="32" rx="2" stroke="#307FE2" stroke-width="1.5"/>
-            <path d="M4 22L32 6l28 16" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round"/>
-            <rect x="22" y="36" width="8" height="16" rx="1" stroke="#307FE2" stroke-width="1.5"/>
-            <rect x="34" y="36" width="8" height="16" rx="1" stroke="#307FE2" stroke-width="1.5"/>
-            <rect x="14" y="26" width="7" height="7" rx="1" stroke="#307FE2" stroke-width="1.5" opacity="0.5"/>
-            <rect x="43" y="26" width="7" height="7" rx="1" stroke="#307FE2" stroke-width="1.5" opacity="0.5"/>
-          </svg>
-          {% elif opt.path == 'teacher' %}
-          <svg width="64" height="56" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="6" y="8" width="40" height="32" rx="2" stroke="#307FE2" stroke-width="1.5"/>
-            <line x1="14" y1="18" x2="38" y2="18" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <line x1="14" y1="24" x2="38" y2="24" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <line x1="14" y1="30" x2="28" y2="30" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <path d="M46 40v8M46 40l6-4M46 40l-6-4" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="46" cy="32" r="5" stroke="#307FE2" stroke-width="1.5"/>
-          </svg>
-          {% elif opt.path == 'secretariat' %}
-          <svg width="64" height="56" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="14" y="6" width="32" height="40" rx="2" stroke="#307FE2" stroke-width="1.5"/>
-            <line x1="21" y1="17" x2="43" y2="17" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <line x1="21" y1="23" x2="43" y2="23" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <line x1="21" y1="29" x2="36" y2="29" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <path d="M21 37l4 4 8-8" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="10" y="10" width="32" height="40" rx="2" stroke="#307FE2" stroke-width="1.5" fill="white"/>
-            <line x1="17" y1="20" x2="35" y2="20" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <line x1="17" y1="26" x2="35" y2="26" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <line x1="17" y1="32" x2="28" y2="32" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-            <path d="M17 40l4 4 8-8" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          {% elif opt.path == 'parent' %}
-          <svg width="64" height="56" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 26L32 10l22 16v22H10V26z" stroke="#307FE2" stroke-width="1.5" stroke-linejoin="round"/>
-            <rect x="24" y="34" width="8" height="14" rx="1" stroke="#307FE2" stroke-width="1.5"/>
-            <path d="M32 22c0-3 4-5 4-2.5 0 2.5-4 5-4 5s-4-2.5-4-5c0-2.5 4-.5 4 2.5z" fill="#307FE2" opacity="0.5"/>
-          </svg>
-          {% elif opt.path == 'inspector' %}
-          <svg width="64" height="56" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="16" y="8" width="32" height="42" rx="2" stroke="#307FE2" stroke-width="1.5"/>
-            <rect x="24" y="4" width="16" height="8" rx="2" stroke="#307FE2" stroke-width="1.5" fill="white"/>
-            <path d="M24 24l4 4 8-8" stroke="#307FE2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M24 34l4 4 8-8" stroke="#307FE2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
-          </svg>
-          {% else %}
-          <svg width="64" height="56" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="32" cy="20" r="10" stroke="#307FE2" stroke-width="1.5"/>
-            <path d="M12 50c0-11 9-18 20-18s20 7 20 18" stroke="#307FE2" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          {% endif %}
-        </div>
-        <div class="role-card__body">
-          <span class="role-card__title">{{ opt.label }}</span>
-          <span class="role-card__arrow" aria-hidden="true">→</span>
-        </div>
+        <span class="role-card__title">{{ opt.label }}</span>
+        {% if opt.path == 'director' %}
+        <span class="role-card__sub">Director adjunct</span>
+        {% elif opt.path == 'secretariat' %}
+        <span class="role-card__sub">Secretar, administrator, personal auxiliar</span>
+        {% elif opt.path == 'inspector' %}
+        <span class="role-card__sub">Reprezentant autoritate educațională</span>
+        {% endif %}
       </a>
       {% endfor %}
     </nav>
+
   </div>
 </section>
 
-<!-- ── S6 CREDIBILITY FOOTER ─────────────────────────────── -->
+<!-- ── S5 FOOTER ──────────────────────────────────────────── -->
 <footer class="landing-footer" role="contentinfo">
   <div class="landing-inner--mid">
     <p class="credibility-text">
       Studiul este realizat de echipa Edus, pe baza experienței de lucru cu aproape 1.000 de
       instituții publice din România și a datelor publice din portalul SEAP. Rezultatele vor
-      fi publicate deschis pe <a href="https://edus.ro" style="color:var(--muted);text-decoration:underline;text-underline-offset:3px;">edus.ro</a>.
+      fi publicate integral și fără restricții de acces pe
+      <a href="https://edus.ro" style="color:var(--muted);text-decoration:underline;text-underline-offset:3px;">edus.ro</a>.
     </p>
   </div>
 </footer>
 
-{% if is_y1 %}
 <script>
-(function() {
-  var cutoff = new Date('{{ wave_cutoff|escapejs }}');
-  function update() {
-    var now = new Date();
-    var diff = cutoff - now;
-    var el = document.getElementById('countdown-days');
-    if (!el) return;
-    if (diff <= 0) {
-      el.textContent = '0';
-      return;
+(function () {
+  var countUrl = '{% url "survey:count" %}';
+  var prevCount = null;
+
+  function applyCount(data) {
+    var numEl = document.getElementById('counter-number');
+    var barEl = document.getElementById('counter-bar');
+    var wrapEl = document.getElementById('counter-bar-wrap');
+    var targetEl = document.getElementById('counter-target');
+    if (!numEl) return;
+
+    var n = data.count;
+    var crossed = prevCount !== null && prevCount < data.target && n >= data.target;
+    prevCount = n;
+
+    numEl.textContent = n.toLocaleString('ro-RO');
+
+    if (data.target === null) {
+      wrapEl.style.display = 'none';
+    } else {
+      wrapEl.style.display = '';
+      targetEl.textContent = 'Obiectiv: ' + data.target.toLocaleString('ro-RO');
+
+      if (crossed) {
+        barEl.style.width = '100%';
+        numEl.textContent = 'Obiectiv atins.';
+        setTimeout(function () {
+          numEl.textContent = n.toLocaleString('ro-RO');
+          barEl.style.width = data.percent + '%';
+        }, 2500);
+      } else {
+        barEl.style.width = data.percent + '%';
+      }
     }
-    el.textContent = Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
-  update();
-  setInterval(update, 60000);
+
+  function fetchCount() {
+    fetch(countUrl)
+      .then(function (r) { return r.json(); })
+      .then(applyCount)
+      .catch(function () {});
+  }
+
+  fetchCount();
+  setInterval(fetchCount, 60000);
 })();
 </script>
-{% endif %}
 
 {% endblock %}

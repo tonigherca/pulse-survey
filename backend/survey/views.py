@@ -10,8 +10,9 @@ The channel is read from the server session at submit, never from the body
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone as dt_timezone
+from datetime import date, datetime, timezone as dt_timezone
 
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import transaction
@@ -41,13 +42,15 @@ def landing(request):
         if cutoff_dt.tzinfo is None:
             cutoff_dt = cutoff_dt.replace(tzinfo=dt_timezone.utc)
         is_y1 = timezone.now() <= cutoff_dt.astimezone(dt_timezone.utc).replace(tzinfo=timezone.utc)
+        days_remaining = max(0, (cutoff_dt.date() - date.today()).days)
     except ValueError:
         is_y1 = True
+        days_remaining = 0
 
     return render(request, 'survey/landing.html', {
         'q0_options': q0.get('options', []),
-        'wave_cutoff': cutoff_iso,
         'is_y1': is_y1,
+        'days_remaining': days_remaining,
     })
 
 
@@ -76,6 +79,25 @@ def _err(message, status=400):
 def get_catalogue(request):
     """Full catalogue for the runner. Read-only, safe to cache."""
     return JsonResponse(catalogue.catalogue())
+
+
+@require_GET
+def count(request):
+    """Live response counter for the landing page. Cached 60 s per spec §12."""
+    cached = cache.get('survey_count_data')
+    if cached is None:
+        n = SurveyResponse.objects.filter(status=SurveyResponse.Status.COMPLETED).count()
+        if n < 300:
+            target, percent = 300, round(n / 300 * 100, 1)
+        elif n < 500:
+            target, percent = 500, round(n / 500 * 100, 1)
+        elif n < 1000:
+            target, percent = 1000, round(n / 1000 * 100, 1)
+        else:
+            target, percent = None, None
+        cached = {'count': n, 'target': target, 'percent': percent}
+        cache.set('survey_count_data', cached, 60)
+    return JsonResponse(cached)
 
 
 @csrf_exempt

@@ -1102,17 +1102,9 @@ a { color: var(--blue); }
   border-bottom: 1px solid var(--border);
 }
 .landing-section--tight { padding: 40px 24px; }
-.landing-section--countdown {
-  padding: 0 24px 56px;
-  margin-top: -64px;
-  position: relative;
-  z-index: 1;
-  border-bottom: 1px solid var(--border);
-}
 @media (max-width: 640px) {
   .landing-section { padding: 48px 20px; }
   .landing-section--tight { padding: 36px 20px; }
-  .landing-section--countdown { padding: 0 20px 48px; margin-top: -48px; }
 }
 
 .landing-inner { max-width: 1080px; margin: 0 auto; }
@@ -1120,166 +1112,107 @@ a { color: var(--blue); }
 .landing-inner--narrow { max-width: 560px; margin: 0 auto; }
 
 /* =========================================================
-   Countdown card
+   Trust strip — S2
    ========================================================= */
-.countdown-card {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 32px 40px;
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  flex-wrap: wrap;
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 32px -8px rgba(17, 24, 39, 0.1);
+.trust-strip {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  text-align: center;
 }
-@media (max-width: 640px) {
-  .countdown-card {
-    padding: 24px 24px;
-    gap: 20px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.trust-strip__text {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
 }
 
-.countdown-card__stat {
+/* =========================================================
+   Editorial block — S3
+   ========================================================= */
+.editorial-section { border-bottom: 1px solid var(--border); }
+.editorial-rule {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 0 36px;
+}
+.editorial-heading {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.8vw, 34px);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+  margin: 0 0 28px;
+  text-wrap: balance;
+}
+.editorial-prose p {
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--body);
+  margin: 0 0 20px;
+  max-width: 68ch;
+}
+.editorial-prose p:last-child { margin: 0; }
+
+/* =========================================================
+   Response counter — S4
+   ========================================================= */
+.response-counter {
+  margin: 32px 0 24px;
+  max-width: 480px;
+}
+.response-counter__stat {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  flex-shrink: 0;
-  line-height: 1;
+  gap: 6px;
+  margin: 0 0 10px;
+  flex-wrap: wrap;
 }
-.countdown-card__number {
+.response-counter__number {
   font-family: var(--font-display);
-  font-size: 72px;
+  font-size: clamp(36px, 4.5vw, 56px);
   font-weight: 600;
   color: var(--blue);
   line-height: 1;
-  min-width: 2ch;
 }
-.countdown-card__unit {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
+.response-counter__label {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--body);
+}
+.response-counter__bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.response-counter__bar-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.response-counter__bar-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 2px;
+  transition: width 0.6s ease-out;
+}
+.response-counter__target {
+  text-align: right;
+  color: var(--muted);
 }
 
-.countdown-card__divider {
-  width: 1px;
-  height: 64px;
-  background: rgba(48, 127, 226, 0.2);
-  flex-shrink: 0;
-}
-@media (max-width: 640px) {
-  .countdown-card__divider { display: none; }
-}
-
-.countdown-card__meta { flex: 1; min-width: 200px; }
-.countdown-card__title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink);
-  line-height: 1.3;
-  margin: 0 0 6px;
-}
-.countdown-card__sub {
+/* =========================================================
+   Countdown inline — S4
+   ========================================================= */
+.countdown-inline {
   font-size: 14px;
   font-weight: 300;
   color: var(--muted);
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* =========================================================
-   Why section — 3 columns
-   ========================================================= */
-.why-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 40px;
-}
-@media (max-width: 768px) {
-  .why-grid { grid-template-columns: 1fr; gap: 16px; }
-}
-
-.why-item {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--r12);
-  padding: 28px 24px;
-}
-.why-item__rule {
-  display: block;
-  width: 28px;
-  height: 2px;
-  background: var(--blue);
-  margin-bottom: 16px;
-}
-.why-item__title {
-  font-family: var(--font-display);
-  font-size: 19px;
-  font-weight: 600;
-  color: var(--ink);
-  line-height: 1.3;
-  margin: 0 0 10px;
-}
-.why-item__body {
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--body);
-  line-height: 1.7;
-  margin: 0;
-}
-
-/* =========================================================
-   Benefits list
-   ========================================================= */
-.benefit-list {
-  list-style: none;
-  padding: 0;
-  margin: 32px 0 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-@media (max-width: 768px) {
-  .benefit-list { grid-template-columns: 1fr; gap: 16px; }
-}
-.benefit-item {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 24px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--r12);
-}
-.benefit-item__icon {
-  width: 36px;
-  height: 36px;
-  background: var(--blue-light);
-  border-radius: var(--r8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--blue);
-}
-.benefit-item__title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0 0 4px;
-  line-height: 1.4;
-}
-.benefit-item__body {
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--body);
-  line-height: 1.6;
-  margin: 0;
+  margin: 0 0 28px;
 }
 
 /* =========================================================
@@ -1293,76 +1226,53 @@ a { color: var(--blue); }
 }
 
 /* =========================================================
-   Blue-tinted section modifier
-   ========================================================= */
-.landing-section--blue {
-  background: var(--blue-light);
-  border-bottom: 1px solid rgba(48, 127, 226, 0.15);
-}
-.landing-section--blue .benefit-item {
-  background: var(--white);
-  border-color: rgba(48, 127, 226, 0.15);
-}
-
-/* =========================================================
-   Role cards — illustrated grid
+   Role cards — text-only, 5 columns
    ========================================================= */
 .role-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
   margin-top: 28px;
 }
-@media (max-width: 600px) {
-  .role-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 860px) {
+  .role-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+}
+@media (max-width: 480px) {
+  .role-grid { grid-template-columns: 1fr; gap: 8px; }
 }
 
 .role-card {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  padding: 20px 16px;
   border: 1.5px solid var(--border);
   border-radius: var(--r12);
-  overflow: hidden;
   text-decoration: none;
   color: var(--ink);
-  transition: border-color 0.15s, box-shadow 0.15s;
   background: var(--white);
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 72px;
 }
 .role-card:hover {
   border-color: var(--blue);
-  box-shadow: 0 4px 16px -4px rgba(48, 127, 226, 0.18);
-}
-
-.role-card__thumb {
   background: var(--blue-light);
-  padding: 28px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 96px;
 }
-.role-card__body {
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border-top: 1px solid var(--border);
+.role-card:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 .role-card__title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink);
-  line-height: 1.35;
+  line-height: 1.3;
 }
-.role-card__arrow {
-  color: var(--blue);
-  font-size: 15px;
-  flex-shrink: 0;
-  transition: transform 0.15s;
-}
-.role-card:hover .role-card__arrow {
-  transform: translateX(3px);
+.role-card__sub {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
 /* =========================================================
