@@ -1083,25 +1083,11 @@ a { color: var(--blue); }
 }
 
 .landing-hero__figure { margin: 0; }
-.landing-hero__placeholder {
+.landing-hero__img {
   width: 100%;
-  aspect-ratio: 4/3;
-  background: rgba(255, 255, 255, 0.55);
+  height: auto;
+  display: block;
   border-radius: 16px;
-  border: 1.5px dashed rgba(48, 127, 226, 0.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  box-shadow: 0 20px 48px -18px rgba(17, 24, 39, 0.14);
-}
-.landing-hero__placeholder-label {
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--muted);
-  text-align: center;
-  line-height: 1.5;
 }
 
 /* =========================================================
